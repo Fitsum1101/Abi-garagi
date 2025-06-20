@@ -55,7 +55,7 @@ const Navbar = () => {
           <hr />
           <div className="ml-4">
             <button className="bg-blue-950 font-semibold text-[1rem] text-white px-5 py-2 uppercase  transition duration-300">
-              <Link>Log out</Link>
+              <Link to={"/login"}>Log out</Link>
             </button>
           </div>
         </div>
