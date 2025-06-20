@@ -1,7 +1,11 @@
 import React from "react";
-
+import Banner from "../components/banner/Banner";
 const ContactAs = () => {
-  return <div>ContactAs</div>;
+  return (
+    <div>
+      <Banner activeNav={"contact us"} />
+    </div>
+  );
 };
 
 export default ContactAs;
