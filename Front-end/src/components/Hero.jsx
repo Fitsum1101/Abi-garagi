@@ -8,7 +8,7 @@ const Hero = () => {
         backgroundImage: `url('${banner}')`,
       }}
     >
-      <div className="flex flex-col pl-4 mx-auto my-auto  max-w-[60rem] bg-red-500  justify-center text-white">
+      <div className="flex flex-col pl-4 m-auto h-full    max-w-[60rem]   justify-center text-white">
         <p className="text-[1rem]">
           working since 1999
           <span className="inline-block h-[.2rem] w-[3rem] self-center ml-1 bg-red-500"></span>
