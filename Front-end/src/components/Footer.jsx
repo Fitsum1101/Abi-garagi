@@ -5,7 +5,7 @@ import { Link } from "react-router";
 
 const Footer = () => {
   return (
-    <div div className="bg-blue-950 w-full  text-white p-4 ">
+    <div div className="bg-[#081336] w-full  text-white p-4 ">
       <div className="max-w-[49rem] m-auto flex justify-between items-center pb-4">
         <div className="flex justify-center items-center">
           <FaLocationArrow className="inline-block mr-2" />

@@ -2,7 +2,7 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import Workshop from "../components/Workshop";
-import Services from "../components/Services";
+import Services from "../components/services/Services";
 import QualityAssurance from "../components/QualityAssurance";
 import banner from "../assets/banners/banner1.jpg";
 

@@ -1,25 +1,6 @@
-import { Link } from "react-router";
+import Singleservice from "./singleService";
 
-const singleService = (name, to) => {
-  return (
-    <div className="w-[300px] border-b-3 border-red-500  bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-      <div className="p-4 flex flex-col gap-15 justify-around ">
-        <div className=" text-blue-950">
-          <p className="uppercase text-[13px]">services and repairs</p>
-          <h2 className="capitalize text-2xl">{name}</h2>
-        </div>
-        <Link
-          to={to}
-          className="text-red-500 font-semibold text-[13px] uppercase"
-        >
-          Read more +
-        </Link>
-      </div>
-    </div>
-  );
-  //   give me an array of objects with name and to properties of my project services
-};
-const servicesData = [
+export const servicesData = [
   { name: "Engine Repair", to: "/services/engine-repair" },
   { name: "Transmission Service", to: "/services/transmission-service" },
   { name: "Brake Repair", to: "/services/brake-repair" },
@@ -40,10 +21,10 @@ const Services = () => {
             saepe ut excepturi. Esse error, doloremque dignissimos dolore
             ratione tempora asperiores.
           </p>
-          <div className="flex  flex-wrap  gap-3  items-center mt-10">
-            {servicesData.map((service) =>
-              singleService(service.name, service.to)
-            )}
+          <div className=" grid grid-cols-3 gap-3  items-center mt-10">
+            {servicesData.map((service, key) => (
+              <Singleservice key={key} to={service.to} name={service.name} />
+            ))}
           </div>
         </div>
       </div>
