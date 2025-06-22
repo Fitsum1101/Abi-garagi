@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model CustomerIdentifier { 
+  customerId Int @id @default(autoincrement())
+  customerEmail String @unique
+  customerPhoneNumber String
+  customerAddedDate DateTime @default(now())
+  customerHash  String? @unique
+  customerInfo CustomerInfo?
+  customerVehicles CustomerVehicleInfo[]
+  orders Order[]
+}
+
+model CustomerInfo {
+  customerInfoId Int @id @default(autoincrement())
+  customerFirstName String
+  customerLastName String
+  activeCustomerStatus Int
+  customer CustomerIdentifier @relation(fields: [customerId], references: [customerId])
+  customerId  Int @unique
+}
+
+model CustomerVehicleInfo {
+  vehicleId Int @id @default(autoincrement())
+  customerId Int
+  vehicleYear Int
+  vehicleMake String
+  vehicleModel String
+  vehicleType String
+  vehicleMileage Int
+  vehicleTag String
+  vehicleSerial String
+  vehicleColor String
+  customer CustomerIdentifier @relation(fields: [customerId], references: [customerId])
+  order Order[] 
+}
+
+
+
+model CommonServices {
+  serviceId      Int                  @id @default(autoincrement())
+  serviceName    String
+  serviceDescription String?      
+  orderService OrderService[]     
+}
+
+model Employee {
+  employeeId     Int                  @id @default(autoincrement())
+  employeeEmail  String               @unique
+  activeEmployee Int
+  addedDate      DateTime             @default(now())
+  role           Role                 @default(EMPLOYEE)
+  employeeInfo   EmployeeInfo[]
+  employeePass   EmployeePass[]
+  orders        Order[]
+}
+
+model EmployeeInfo {
+  employeeInfoId Int @id @default(autoincrement())
+  employeeId    Int
+  employeeFirstName String
+  employeeLastName  String
+  employeePhone String
+  employee      Employee @relation(fields: [employeeId], references: [employeeId])
+}
+
+model EmployeePass {
+  employeePassId      Int @id @default(autoincrement())
+  employeeId         Int
+  employeePasswordHashed String
+  employee           Employee @relation(fields: [employeeId], references: [employeeId])
+}
+
+
+model Order {
+  orderId       Int                  @id @default(autoincrement())
+  employeeId    Int
+  customerId    Int
+  vehicleId     Int
+  orderDate     DateTime             @default(now())
+  activeOrder   Int
+  orderHash     String
+  employee      Employee             @relation(fields: [employeeId], references: [employeeId])
+  customer      CustomerIdentifier   @relation(fields: [customerId], references: [customerId])
+  vehicle      CustomerVehicleInfo  @relation(fields: [vehicleId], references: [vehicleId])
+  orderInfo     OrderInfo[]
+  orderServices OrderService[]
+  orderStatus   OrderStatus[]
+}
+
+model OrderInfo {
+  orderInfoId                Int      @id @default(autoincrement())
+  orderId                    Int
+  orderTotalPrice            Int
+  estimatedCompletionDate    DateTime @default(now())
+  completionDate             DateTime?
+  additionalRequest          String?
+  notesForInternalUse       String?
+  notesForCustomer          String?
+  additionalRequestsCompleted Int
+  order                      Order    @relation(fields: [orderId], references: [orderId])
+}
+
+model OrderService {
+  orderServiceId Int @id @default(autoincrement())
+  orderId       Int
+  serviceId     Int
+  serviceCompleted Int
+  order        Order        @relation(fields: [orderId], references: [orderId])
+  service     CommonServices @relation(fields: [serviceId], references: [serviceId])
+}
+
+model OrderStatus {
+  orderStatusId Int @id @default(autoincrement())
+  orderId      Int
+  orderStatus  Int
+  order       Order @relation(fields: [orderId], references: [orderId])
+}
+
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+  MANAGER
+}
