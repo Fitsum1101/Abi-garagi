@@ -56,7 +56,8 @@ model CustomerVehicleInfo {
 model CommonServices {
   serviceId      Int                  @id @default(autoincrement())
   serviceName    String
-  serviceDescription String?      
+  serviceDescription String?  
+  activeService  Int @default(1)  
   orderService OrderService[]     
 }
 
@@ -66,14 +67,14 @@ model Employee {
   activeEmployee Int
   addedDate      DateTime             @default(now())
   role           Role                 @default(EMPLOYEE)
-  employeeInfo   EmployeeInfo[]
-  employeePass   EmployeePass[]
+  employeeInfo   EmployeeInfo?
+  employeePass   EmployeePass?
   orders        Order[]
 }
 
 model EmployeeInfo {
   employeeInfoId Int @id @default(autoincrement())
-  employeeId    Int
+  employeeId    Int @unique
   employeeFirstName String
   employeeLastName  String
   employeePhone String
@@ -82,7 +83,7 @@ model EmployeeInfo {
 
 model EmployeePass {
   employeePassId      Int @id @default(autoincrement())
-  employeeId         Int
+  employeeId         Int @unique
   employeePasswordHashed String
   employee           Employee @relation(fields: [employeeId], references: [employeeId])
 }
