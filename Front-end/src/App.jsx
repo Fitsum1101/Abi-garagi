@@ -11,6 +11,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import Addcustomer from "./pages/Admin/Addcustomer";
 import AddEmployee from "./pages/Admin/AddEmployee";
 import Customers from "./pages/Admin/Customers";
+import { action as customerAction } from "./pages/Admin/Addcustomer";
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,11 @@ const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <Admin /> },
-          { path: "add-customer", element: <Addcustomer /> },
+          {
+            path: "add-customer",
+            element: <Addcustomer />,
+            action: customerAction,
+          },
           { path: "add-employee", element: <AddEmployee /> },
           { path: "customers", element: <Customers /> },
         ],
