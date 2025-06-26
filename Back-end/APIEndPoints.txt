@@ -15,7 +15,27 @@ API End points
       request
       GET /api/employees HTTP/1.1
       Host: localhost:8080 
-     
+      
+      response
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+      {
+        "limit":10,
+        "contacts":
+        [
+          {
+            "employee_id": 1,
+            "employee_email": "test@test.com",
+            "employee_first_name": "Test",
+            "employee_last_name": "Test",
+            "employee_phone": "555-555-5555",
+            "active_employee": 1,
+            "added_date": "2016-11-28T14:10:11.338Z"
+          },
+          {},
+          ...
+        ]
+      }
 
     ------------- 
 
