@@ -14,9 +14,6 @@ exports.getCustomerById = async (req, res, next) => {
       where: { customerId: customerIdentifier.customerId },
     });
 
-    if (!customerIdentifier || !customerInfo) {
-      return res.status(404).json({ error: "Customer not found" });
-    }
     res.status(200).json({
       customer: {
         customer_id: customerInfo.customerId,
@@ -24,7 +21,9 @@ exports.getCustomerById = async (req, res, next) => {
         customer_phone_number: customerIdentifier.customerPhoneNumber,
         customer_first_name: customerInfo.customerFirstName,
         customer_last_name: customerInfo.customerLastName,
-        customer_hash: customerIdentifier.customerHash,
+        customer_hash: customerIdentifier.customerHash
+          .replaceAll("/", "-")
+          .replaceAll("+", "_"),
         active_customer_status: customerInfo.activeCustomerStatus,
         customer_added_date: customerIdentifier.customerAddedDate,
       },
@@ -41,7 +40,7 @@ exports.postCustomer = async (req, res, next) => {
       data: {
         customerEmail: req.body.customer_email,
         customerPhoneNumber: req.body.customer_phone_number,
-        customerAddedDate: new Date(req.body.customer_added_date).toISOString(),
+        customerAddedDate: new Date().toISOString(),
       },
     });
 
@@ -74,9 +73,6 @@ exports.updateCustomer = async (req, res, next) => {
     const customerIdentifier = await db.customerIdentifier.findFirst({
       where: { customerHash: hashedId },
     });
-    if (!customerIdentifier) {
-      return res.status(404).json({ error: "Customer not found" });
-    }
     const updatedcustomerIdentifier = await db.customerIdentifier.update({
       where: {
         customerHash: hashedId,
