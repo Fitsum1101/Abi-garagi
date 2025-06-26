@@ -49,7 +49,6 @@ exports.getEmployeeById = async (req, res, next) => {
     const employeeIdentifier = await db.employee.findUnique({
       where: { employeeId: id },
     });
-    console.log(employeeIdentifier);
     if (!employeeIdentifier) {
       return res.status(404).json({ error: "Employee not found" });
     }
@@ -79,6 +78,7 @@ exports.getEmployeeById = async (req, res, next) => {
 
 exports.postEmployee = async (req, res, next) => {
   try {
+    // handle role validation
     const hashedPassword = await bcrypt.hash(req.body.employee_password, 5);
     const employee = await db.employee.create({
       data: {
