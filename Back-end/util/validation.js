@@ -2,6 +2,8 @@ const db = require("./db");
 
 const { body, param } = require("express-validator");
 
+const allowedRoles = ["admin", "employee", "manager"];
+
 exports.nameValidation = (name, message) =>
   body(name).notEmpty().withMessage(message);
 
@@ -77,7 +79,8 @@ exports.customerIdValidation = () =>
 
 exports.employeeEmailValidation = (name, message) =>
   body(name)
-    .isEmail()
+    .trim()
+    .notEmpty()
     .withMessage(message)
     .custom(async (value) => {
       const existingEmployee = await db.employee.findFirst({
@@ -92,9 +95,19 @@ exports.employeeEmailValidation = (name, message) =>
 exports.employeePasswordValidation = () =>
   body("employee_password")
     .trim()
-    .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long");
+    .custom((value) => {
+      if (value.length < 6) {
+        throw new Error("Password must be at least 6 characters long");
+      }
+      return true;
+    });
 
+exports.empolyRoleValidation = () =>
+  body("employee_role")
+    .notEmpty()
+    .withMessage("Role is required")
+    .isIn(allowedRoles)
+    .withMessage(`Role must be one of: ${allowedRoles.join(", ")}`);
 exports.employeeIdValidation = () =>
   param("id")
     .exists()
@@ -112,20 +125,31 @@ exports.employeeIdValidation = () =>
     });
 
 exports.employeePhoneNumberValidation = () =>
-  body("employeePhone")
+  body("employee_phone")
     .trim()
-    .isLength({ min: 10 })
-    .withMessage("Phone number must be 10 digits long")
     .custom((value) => {
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(value)) {
-        throw new Error("Phone number must be numeric and 10 digits long");
+      if (/[a-zA-Z]/.test(value) === true) {
+        throw new Error("Please enter valid phone number (e.g., 0927263385).");
+      }
+      return true;
+    })
+    .custom((value) => {
+      if (value.trim().length !== 10) {
+        throw new Error(
+          "Phone number must be exactly 10 digits (e.g., 0927263385)"
+        );
+      }
+      return true;
+    })
+    .custom((value) => {
+      if (value.slice(0, 2) !== "09") {
+        throw new Error("phone number needs to start with 09");
       }
       return true;
     })
     .custom(async (value, { req }) => {
       let whereCondition = {
-        employeePhone: value,
+        employeePhone: value.trim(),
       };
       if (req.params.id) {
         whereCondition.employeeId = req.params.id;
@@ -133,6 +157,7 @@ exports.employeePhoneNumberValidation = () =>
       const employee = await db.employeeInfo.findFirst({
         where: whereCondition,
       });
+      console.log(employee);
       if (employee) {
         throw new Error("Phone number already exists");
       }
