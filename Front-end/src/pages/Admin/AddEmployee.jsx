@@ -1,16 +1,41 @@
-import React from "react";
-import { Form, useActionData } from "react-router";
+import { useState } from "react";
+import { Form, useActionData, data } from "react-router";
 import Input from "../../components/Input/Input";
+import { useEffect } from "react";
 
 const AddEmployee = () => {
   const action = useActionData();
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const isSetTimeout = action && action.success && true;
+    if (isSetTimeout) {
+      setSuccess(() => {
+        return action.success;
+      });
+      const timeoutId = setTimeout(() => {
+        setSuccess(false);
+      }, 2000);
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+    }
+  }, [action]);
+
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
         Add a new employee
         <span className="inline-block h-[.2rem] w-[3rem] self-center ml-1 bg-red-500"></span>
       </p>
-      <Form className="flex w-[60%]  flex-col gap-6">
+      <Form method="post" className="flex w-[60%]   flex-col gap-6">
+        {success && (
+          <p className="text-green-600 bg-green-50 border-l-4 border-green-500 px-4 py-2 rounded-md shadow-sm text-sm font-medium">
+            employee added successfuly
+          </p>
+        )}
         <Input
           type={"email"}
           width={"100%"}
@@ -53,20 +78,23 @@ const AddEmployee = () => {
             selected
             value="employee"
           >
-            Employee
+            employee
           </option>
           <option className="border-1 pt-2 border-none" value="manager">
-            Manager
+            manager
+          </option>
+          <option className="border-1 pt-2 border-none" value="admin">
+            admin
           </option>
         </select>
         <Input
           type={"password"}
           width={"100%"}
-          name={"phone"}
+          name={"password"}
           placeholder={"Employee password"}
           pl={20}
           py={10}
-          serverError={action && action.phone && action.phone}
+          serverError={action && action.password && action.password}
         />
         <button className="self-start cursor-pointer text-center uppercase px-4 text-[14px] py-3 text-white bg-red-600 font-bold">
           Add employee
@@ -82,7 +110,6 @@ export const action = async ({ request }) => {
   try {
     const formData = await request.formData();
     const formDatas = Object.fromEntries(formData.entries());
-
     const error = {};
 
     for (let input in formDatas) {
@@ -116,6 +143,10 @@ export const action = async ({ request }) => {
         } else if (formDatas[input].slice(0, 2) !== "09") {
           error[input] = "phone number needs to start with 09";
         }
+      } else if (input === "password") {
+        if (formDatas[input].length < 6) {
+          error[input] = "password needs to be more than six digit";
+        }
       }
     }
 
@@ -124,13 +155,15 @@ export const action = async ({ request }) => {
     }
 
     const toApiData = {
-      customer_email: formDatas.email,
-      customer_phone_number: formDatas.phone,
-      customer_first_name: formDatas.firstName,
-      customer_last_name: formDatas.lastName,
+      employee_email: formDatas.email,
+      employee_first_name: formDatas.firstName,
+      employee_last_name: formDatas.lastName,
+      employee_phone: formDatas.phone,
+      employee_password: formDatas.password,
+      employee_role: formDatas.role,
     };
 
-    const response = await fetch("http://localhost:3000/customer", {
+    const response = await fetch("http://localhost:3000/employee", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -144,16 +177,17 @@ export const action = async ({ request }) => {
       if (response.status === 400) {
         errorData = await response.json();
         errorData = errorData.error;
-        if (errorData.name === "customer_email") {
+        if (errorData.name === "employee_email") {
           serverErrorData["email"] = errorData.msg;
-        } else if (errorData.name === "customer_first_name") {
+        } else if (errorData.name === "employee_first_name") {
           serverErrorData["firstName"] = errorData.msg;
-        } else if (errorData.name === "customer_last_name") {
+        } else if (errorData.name === "employee_last_name") {
           serverErrorData["lastName"] = errorData.msg;
-        } else {
+        } else if (errorData.name === "employee_phone") {
           serverErrorData["phone"] = errorData.msg;
+        } else {
+          serverErrorData["password"] = errorData.msg;
         }
-        console.log(serverErrorData);
         return data({ ...serverErrorData }, { status: 400 });
       }
     }
