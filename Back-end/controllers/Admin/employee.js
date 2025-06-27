@@ -85,25 +85,26 @@ exports.postEmployee = async (req, res, next) => {
         employeeEmail: req.body.employee_email,
         activeEmployee: 1,
         addedDate: new Date().toISOString(),
-        role: req.body.role || "EMPLOYEE", // Default to 'employee' if not provided
+        role: req.body.role || "EMPLOYEE",
       },
     });
 
-    await db.employeePass.create({
+    const employeeInfo = await db.employeeInfo.create({
+      data: {
+        employeeId: employee.employeeId,
+        employeePhone: req.body.employee_phone,
+        employeeFirstName: req.body.employee_first_name,
+        employeeLastName: req.body.employee_last_name,
+      },
+    });
+
+    const employeePassword = await db.employeePass.create({
       data: {
         employeeId: employee.employeeId,
         employeePasswordHashed: hashedPassword,
       },
     });
 
-    await db.employeeInfo.create({
-      data: {
-        employeeId: employee.employeeId,
-        employeePhone: req.body.employee_phone_number,
-        employeeFirstName: req.body.employee_first_name,
-        employeeLastName: req.body.employee_last_name,
-      },
-    });
     res.status(201).json({
       success: true,
     });

@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { validateResultMiddle } = require("../../middleware/validationResult");
 
 const employeeController = require("../../controllers/Admin/employee");
 
@@ -8,6 +9,7 @@ const {
   employeePasswordValidation,
   nameValidation,
   employeePhoneNumberValidation,
+  empolyRoleValidation,
 } = require("../../util/validation");
 
 router.get("/employee/", employeeController.getEmployee);
@@ -25,8 +27,10 @@ router.post(
     nameValidation("employee_first_name", "First name is required"),
     nameValidation("employee_last_name", "Last name is required"),
     employeePhoneNumberValidation(),
+    empolyRoleValidation(),
     employeePasswordValidation(),
   ],
+  validateResultMiddle,
   employeeController.postEmployee
 );
 

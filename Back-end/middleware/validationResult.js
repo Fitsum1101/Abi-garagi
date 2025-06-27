@@ -1,4 +1,3 @@
-const { error } = require("console");
 const { validationResult } = require("express-validator");
 
 exports.validateResultMiddle = (req, res, next) => {
