@@ -1,4 +1,5 @@
-import React from "react";
+import React, { Suspense } from "react";
+import { Await, Link, useAsyncValue, useLoaderData } from "react-router-dom";
 
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -10,123 +11,111 @@ import Paper from "@mui/material/Paper";
 import EditSquareIcon from "@mui/icons-material/EditSquare";
 import OpenInFullSharpIcon from "@mui/icons-material/OpenInFullSharp";
 
-const rows = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "555-555-5555",
-    addedDate: "2023-01-01",
-    action: "View",
-    edit: "Edit",
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    phone: "555-555-5555",
-    addedDate: "2023-01-02",
-    action: "View",
-    edit: "Edit",
-  },
-  {
-    id: 3,
-    firstName: "Alice",
-    lastName: "Johnson",
-    email: "alice.johnson@example.com",
-    phone: "555-555-5555",
-    addedDate: "2023-01-03",
-    action: "View",
-    edit: "Edit",
-  },
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "555-555-5555",
-    addedDate: "2023-01-01",
-    action: "View",
-    edit: "Edit",
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    phone: "555-555-5555",
-    addedDate: "2023-01-02",
-    action: "View",
-    edit: "Edit",
-  },
-  {
-    id: 3,
-    firstName: "Alice",
-    lastName: "Johnson",
-    email: "alice.johnson@example.com",
-    phone: "555-555-5555",
-    addedDate: "2023-01-03",
-    action: "View",
-    edit: "Edit",
-  },
-];
-
 const Customers = () => {
+  const data = useLoaderData();
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
         Add a new customer
         <span className="inline-block h-[.2rem] w-[3rem] self-center ml-1 bg-red-500"></span>
       </p>
+      <Suspense
+        fallback={
+          <h1 className="text-xl text-blue-800 text-center">loading...</h1>
+        }
+      >
+        <Await
+          resolve={data}
+          errorElement={
+            <p className="text-xl text-center text-red-600">
+              failed to fetch data
+            </p>
+          }
+        >
+          <CustomersTable />
+        </Await>
+      </Suspense>
+    </div>
+  );
+};
+
+export default Customers;
+
+export async function loader() {
+  return await fetch("http://localhost:3000/customer", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+const CustomersTable = () => {
+  const customderData = useAsyncValue();
+  if (customderData.contacts.length > 0)
+    return (
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell align="right">First Name</TableCell>
-              <TableCell align="right">Last Name</TableCell>
-              <TableCell align="right">Email</TableCell>
-              <TableCell align="right">Phone</TableCell>
-              <TableCell align="right">Added Dates</TableCell>
-              <TableCell align="right">Action</TableCell>
-              <TableCell align="right">Edit</TableCell>
+              <TableCell align="left">First Name</TableCell>
+              <TableCell align="left">Last Name</TableCell>
+              <TableCell align="left">Email</TableCell>
+              <TableCell align="left">Phone</TableCell>
+              <TableCell align="left">Added Dates</TableCell>
+              <TableCell align="left">Action</TableCell>
+              <TableCell align="left">Edit</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, key) => (
+            {customderData.contacts.map((row, key) => (
               <TableRow
-                key={row.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                key={key + 1}
+                sx={{
+                  "&:last-child td, &:last-child th": { border: 0 },
+                  padding: 0,
+                }}
                 className={`${
                   (key + 1) % 2 === 0 ? "bg-gray-100" : "bg-white"
                 }`}
               >
                 <TableCell component="th" scope="row">
-                  {row.id}
+                  {key + 1}
                 </TableCell>
-                <TableCell style={{ fontWeight: "bold" }} align="right">
-                  {row.firstName}
+                <TableCell style={{ fontWeight: "bold" }} align="left">
+                  {row.customer_first_name}
                 </TableCell>
-                <TableCell style={{ fontWeight: "bold" }} align="right">
-                  {row.lastName}
+                <TableCell style={{ fontWeight: "bold" }} align="left">
+                  {row.customer_last_name}
                 </TableCell>
-                <TableCell align="right">{row.email}</TableCell>
-                <TableCell align="right">{row.phone}</TableCell>
-                <TableCell align="right">{row.addedDate}</TableCell>
-                <TableCell align="right">{row.action}</TableCell>
-                <TableCell align="right">
-                  <EditSquareIcon fontSize="small" />
-                  <OpenInFullSharpIcon fontSize="small" className="ml-2" />
+                <TableCell align="left">{row.customer_email}</TableCell>
+                <TableCell align="left">{row.customer_phone_number}</TableCell>
+                <TableCell align="left">{row.customer_added_date}</TableCell>
+                <TableCell align="left">{row.active_customer_status}</TableCell>
+                <TableCell align="left">
+                  <div className="flex gap-2">
+                    <Link>
+                      <EditSquareIcon fontSize="small" />
+                    </Link>
+                    <Link>
+                      <OpenInFullSharpIcon fontSize="small" className="ml-2" />
+                    </Link>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </div>
-  );
+    );
+  else return <h1>no customer data yet</h1>;
 };
-
-export default Customers;
+//  "customer_id": 1,
+//             "customer_email": "test@test.com",
+//             "customer_phone_number": "555-555-5555",
+//             "customer_first_name": "Test",
+//             "customer_last_name": "Test",
+//             "customer_hash": "khsdgfkujhkjnfdfg7763hdff",
+//             "active_customer_status": 1,
+//             "customer_added_date": "2016-11-28T14:10:11.338Z"
