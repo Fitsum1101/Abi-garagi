@@ -1,20 +1,9 @@
-import React from "react";
-import Input from "../../components/Input/Input";
+import { useState, useEffect } from "react";
+import { Form, useNavigation, data, useActionData } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 
-import { Form, useNavigation, data, useActionData } from "react-router-dom";
-import { useState } from "react";
-import { useEffect } from "react";
+import Input from "../../components/Input/Input";
 
-const successMessage = () => {
-  setTimeout(() => {
-    return (
-      <p className="text-green-600 bg-green-50 border-l-4 border-green-500 px-4 py-2 rounded-md shadow-sm text-sm font-medium">
-        customer added successfuly
-      </p>
-    );
-  }, 2000);
-};
 const Addcustomer = () => {
   const action = useActionData();
   const navigation = useNavigation();
