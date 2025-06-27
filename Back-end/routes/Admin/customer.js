@@ -9,6 +9,8 @@ const {
   customerIdValidation,
 } = require("../../util/validation");
 
+router.get("/customer", customerController.getCustomer);
+
 router.post(
   "/customer",
   [
