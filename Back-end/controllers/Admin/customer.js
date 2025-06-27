@@ -101,3 +101,65 @@ exports.updateCustomer = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getCustomer = async (req, res, next) => {
+  try {
+    let customer = await db.customerIdentifier.findMany({
+      take: 10,
+      select: {
+        customerId: true,
+        customerEmail: true,
+        customerPhoneNumber: true,
+        customerHash: true,
+        customerAddedDate: true,
+      },
+    });
+
+    customer = await Promise.all(
+      customer.map(async (cust) => {
+        const info = await db.customerInfo.findUnique({
+          where: { customerId: cust.customerId },
+          select: {
+            activeCustomerStatus: true,
+            customerFirstName: true,
+            customerLastName: true,
+          },
+        });
+        return {
+          customer_id: 1,
+          customer_email: cust.customerEmail,
+          customer_phone_number: cust.customerPhoneNumber,
+          customer_first_name: info?.customerFirstName,
+          customer_last_name: info?.customerLastName,
+          customer_hash: cust.customerHash,
+          active_customer_status: info?.activeCustomerStatus,
+          customer_added_date: fullYearTime(cust.customerAddedDate),
+        };
+      })
+    );
+    console.log(customer);
+    setTimeout(() => {
+      res.json({
+        limit: 10,
+        contacts: customer,
+      });
+    }, 2000);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const fullYearTime = (value) => {
+  const date = new Date(value);
+  return [
+    date.getFullYear(),
+    "-",
+    date.getMonth(),
+    "-",
+    date.getDay(),
+    "|",
+    date.getHours(),
+    ":",
+    date.getMinutes(),
+  ].join("");
+};
