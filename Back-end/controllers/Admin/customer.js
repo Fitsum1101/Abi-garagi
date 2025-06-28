@@ -2,6 +2,39 @@ const bcrypt = require("bcrypt");
 
 const db = require("../../util/db");
 
+exports.searchCustomer = async (req, res) => {
+  const { query } = req.query;
+  console.log("search called");
+  if (!query || typeof query !== "string") {
+    return res.status(400).json({ error: "Search query is required" });
+  }
+
+  try {
+    const results = await db.customerIdentifier.findMany({
+      where: {
+        OR: [
+          {
+            customerEmail: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            customerPhoneNumber: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+    });
+    console.log(results);
+    return res.status(200).json(results);
+  } catch (error) {
+    console.error("Search failed:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 exports.getCustomerById = async (req, res, next) => {
   try {
     const hashedId = req.params.id;
@@ -137,7 +170,6 @@ exports.getCustomer = async (req, res, next) => {
         };
       })
     );
-    console.log(customer);
     setTimeout(() => {
       res.json({
         limit: 10,
