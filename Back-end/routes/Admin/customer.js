@@ -49,4 +49,6 @@ router.put(
   customerController.updateCustomer
 );
 
+router.get("/customer/search", customerController.searchCustomer);
+
 module.exports = router;
