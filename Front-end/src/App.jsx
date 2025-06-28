@@ -12,6 +12,7 @@ import Addcustomer from "./pages/Admin/Addcustomer";
 import AddEmployee from "./pages/Admin/AddEmployee";
 import Customers from "./pages/Admin/Customers";
 import { action as customerAction } from "./pages/Admin/Addcustomer";
+import { action as customerSearchAction } from "./pages/Admin/Customers";
 import { action as employeeAction } from "./pages/Admin/AddEmployee";
 import { loader as customerLoader } from "./pages/Admin/Customers";
 
@@ -41,7 +42,12 @@ const router = createBrowserRouter([
             element: <AddEmployee />,
             action: employeeAction,
           },
-          { path: "customers", element: <Customers />, loader: customerLoader },
+          {
+            path: "customers",
+            element: <Customers />,
+            loader: customerLoader,
+            action: customerSearchAction,
+          },
         ],
       },
     ],

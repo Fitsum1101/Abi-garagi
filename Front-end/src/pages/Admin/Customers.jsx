@@ -1,5 +1,11 @@
 import React, { Suspense } from "react";
-import { Await, Link, useAsyncValue, useLoaderData } from "react-router-dom";
+import {
+  Await,
+  Form,
+  Link,
+  useAsyncValue,
+  useLoaderData,
+} from "react-router-dom";
 
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -10,6 +16,8 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import EditSquareIcon from "@mui/icons-material/EditSquare";
 import OpenInFullSharpIcon from "@mui/icons-material/OpenInFullSharp";
+import Input from "@mui/material/Input";
+import TextField from "@mui/material/TextField";
 
 const Customers = () => {
   const data = useLoaderData();
@@ -19,6 +27,15 @@ const Customers = () => {
         Add a new customer
         <span className="inline-block h-[.2rem] w-[3rem] self-center ml-1 bg-red-500"></span>
       </p>
+      <Form className="mb-7" method="post">
+        <input
+          type="search"
+          placeholder="Search a customer by firstName ,lastName ,phone numbre or email"
+          name="search"
+          id="search"
+          className="w-full py-3 px-5 text-[17px] placeholder:italic  bg-white border-1 border-gray-300"
+        />
+      </Form>
       <Suspense
         fallback={
           <h1 className="text-xl text-blue-800 text-center">loading...</h1>
@@ -50,50 +67,101 @@ export async function loader() {
   });
 }
 
+// routes/searchAction.js
+export async function action({ request }) {
+  const formData = await request.formData();
+  const query = formData.get("search");
+  console.log(query);
+  try {
+    const response = await fetch(
+      `http://localhost:3000/customer/search?query=${encodeURIComponent(
+        query
+      )}`,
+      {
+        method: "GET",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch search results");
+    }
+
+    const data = await response.json();
+
+    console.log(data);
+
+    return data; // or use redirect or return JSON depending on your route design
+  } catch (error) {
+    console.error("Search error:", error);
+    throw error;
+  }
+}
+
 const CustomersTable = () => {
   const customderData = useAsyncValue();
   if (customderData.contacts.length > 0)
     return (
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell align="left">First Name</TableCell>
-              <TableCell align="left">Last Name</TableCell>
-              <TableCell align="left">Email</TableCell>
-              <TableCell align="left">Phone</TableCell>
-              <TableCell align="left">Added Dates</TableCell>
-              <TableCell align="left">Action</TableCell>
-              <TableCell align="left">Edit</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <div className="overflow-x-auto">
+        <table className="min-w-full   border border-amber-600 text-left">
+          <thead className="capitalize">
+            <tr className="bg-gray-100">
+              <th className=" pl-2 uppercase  py-2 font-bold border border-gray-300  text-gray-700">
+                id
+              </th>
+              <th className="pl-2 font-bold  py-2 text-sm border border-gray-300  text-gray-700">
+                first name
+              </th>
+              <th className="pl-2 font-bold  py-2 text-sm border border-gray-300  text-gray-700">
+                last name
+              </th>
+              <th className=" pl-2 py-2 text-sm border border-gray-300 font-semibold text-gray-700">
+                email
+              </th>
+
+              <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
+                phone number
+              </th>
+              <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
+                added date
+              </th>
+              <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
+                active
+              </th>
+              <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
+                edit
+              </th>
+            </tr>
+          </thead>
+          <tbody>
             {customderData.contacts.map((row, key) => (
-              <TableRow
-                key={key + 1}
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                  padding: 0,
-                }}
-                className={`${
-                  (key + 1) % 2 === 0 ? "bg-gray-100" : "bg-white"
-                }`}
+              <tr
+                className={` ${
+                  (key + 1) % 2 !== 0 ? "bg-gray-200" : null
+                } capitalize transition text-[16px]`}
+                key={key}
               >
-                <TableCell component="th" scope="row">
+                <td className="pl-2 py-2 font-bold border border-gray-300 ">
                   {key + 1}
-                </TableCell>
-                <TableCell style={{ fontWeight: "bold" }} align="left">
+                </td>
+                <td className="pl-2  py-2 border font-bold border-gray-300 ">
                   {row.customer_first_name}
-                </TableCell>
-                <TableCell style={{ fontWeight: "bold" }} align="left">
+                </td>
+                <td className="pl-2  py-2 border font-bold border-gray-300 ">
                   {row.customer_last_name}
-                </TableCell>
-                <TableCell align="left">{row.customer_email}</TableCell>
-                <TableCell align="left">{row.customer_phone_number}</TableCell>
-                <TableCell align="left">{row.customer_added_date}</TableCell>
-                <TableCell align="left">{row.active_customer_status}</TableCell>
-                <TableCell align="left">
+                </td>
+                <td className="pl-2  py-2 border border-gray-300 ">
+                  {row.customer_email}
+                </td>
+                <td className="pl-2 py-1 border border-gray-300 ">
+                  {row.customer_phone_number}
+                </td>
+                <td className="pl-2 py-1 border border-gray-300 ">
+                  {row.customer_added_date}
+                </td>
+                <td className="pl-2 py-1 border border-gray-300 ">
+                  {row.active_customer_status === 1 ? "yes" : "no"}
+                </td>
+                <td className="pl-4 py-1 border border-gray-300 ">
                   <div className="flex gap-2">
                     <Link>
                       <EditSquareIcon fontSize="small" />
@@ -102,20 +170,12 @@ const CustomersTable = () => {
                       <OpenInFullSharpIcon fontSize="small" className="ml-2" />
                     </Link>
                   </div>
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
     );
   else return <h1>no customer data yet</h1>;
 };
-//  "customer_id": 1,
-//             "customer_email": "test@test.com",
-//             "customer_phone_number": "555-555-5555",
-//             "customer_first_name": "Test",
-//             "customer_last_name": "Test",
-//             "customer_hash": "khsdgfkujhkjnfdfg7763hdff",
-//             "active_customer_status": 1,
-//             "customer_added_date": "2016-11-28T14:10:11.338Z"
