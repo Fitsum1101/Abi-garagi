@@ -3,24 +3,19 @@ import {
   Await,
   Form,
   Link,
+  redirect,
+  useActionData,
   useAsyncValue,
   useLoaderData,
+  useSubmit,
 } from "react-router-dom";
 
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import EditSquareIcon from "@mui/icons-material/EditSquare";
 import OpenInFullSharpIcon from "@mui/icons-material/OpenInFullSharp";
-import Input from "@mui/material/Input";
-import TextField from "@mui/material/TextField";
 
 const Customers = () => {
   const data = useLoaderData();
+
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
@@ -71,35 +66,29 @@ export async function loader() {
 export async function action({ request }) {
   const formData = await request.formData();
   const query = formData.get("search");
-  console.log(query);
-  try {
-    const response = await fetch(
-      `http://localhost:3000/customer/search?query=${encodeURIComponent(
-        query
-      )}`,
-      {
-        method: "GET",
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch search results");
-    }
-
-    const data = await response.json();
-
-    console.log(data);
-
-    return data; // or use redirect or return JSON depending on your route design
-  } catch (error) {
-    console.error("Search error:", error);
-    throw error;
+  if (query.trim().length === 0) {
+    return redirect("/admin/customers");
   }
+  return await fetch(
+    `http://localhost:3000/customer/search?query=${encodeURIComponent(query)}`,
+    {
+      method: "GET",
+    }
+  );
 }
 
 const CustomersTable = () => {
   const customderData = useAsyncValue();
-  if (customderData.contacts.length > 0)
+  const searchCustomerData = useActionData();
+  const isActionDataExist = searchCustomerData && true;
+  let data;
+  if (isActionDataExist) {
+    data = searchCustomerData.data;
+    console.log(data);
+  } else {
+    data = customderData.contacts;
+  }
+  if (data.length > 0)
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full   border border-amber-600 text-left">
@@ -133,7 +122,7 @@ const CustomersTable = () => {
             </tr>
           </thead>
           <tbody>
-            {customderData.contacts.map((row, key) => (
+            {data.map((row, key) => (
               <tr
                 className={` ${
                   (key + 1) % 2 !== 0 ? "bg-gray-200" : null
