@@ -4,32 +4,113 @@ const db = require("../../util/db");
 
 exports.searchCustomer = async (req, res) => {
   const { query } = req.query;
-  console.log("search called");
-  if (!query || typeof query !== "string") {
-    return res.status(400).json({ error: "Search query is required" });
-  }
-
   try {
-    const results = await db.customerIdentifier.findMany({
+    const customerResultId = [];
+    let results = await db.customerIdentifier.findMany({
+      take: 10,
+      include: {
+        customerInfo: {
+          select: {
+            activeCustomerStatus: true,
+            customerFirstName: true,
+            customerLastName: true,
+            customerId: true,
+          },
+        },
+      },
       where: {
         OR: [
           {
             customerEmail: {
               contains: query,
-              mode: "insensitive",
             },
           },
           {
             customerPhoneNumber: {
               contains: query,
-              mode: "insensitive",
             },
           },
         ],
       },
     });
-    console.log(results);
-    return res.status(200).json(results);
+
+    const resultLength = 10 - results.length;
+    if (resultLength < 10) {
+      results = results.map((customer) => {
+        customerResultId.push(customer.customerId);
+        const customerData = {
+          customer_email: customer.customerEmail,
+          customer_hash: customer.customerHash
+            .replaceAll("/", "-")
+            .replaceAll("+", "_"),
+          customer_added_date: customer.customerAddedDate,
+          customer_phone_number: customer.customerPhoneNumber,
+          customer_first_name: customer.customerInfo.customerFirstName,
+          customer_last_name: customer.customerInfo.customerLastName,
+          active_customer_status: customer.customerInfo.activeCustomerStatus,
+        };
+        return customerData;
+      });
+    }
+
+    if (!resultLength) {
+      return res.status(200).json({ data: results });
+    }
+    let secoundResult = await db.customerInfo.findMany({
+      take: resultLength,
+      where: {
+        AND: [
+          {
+            customerId: {
+              notIn: customerResultId,
+            },
+          },
+          {
+            OR: [
+              {
+                customerFirstName: {
+                  contains: query,
+                },
+              },
+              {
+                customerLastName: {
+                  contains: query,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      include: {
+        customer: {
+          select: {
+            customerAddedDate: true,
+            customerEmail: true,
+            customerHash: true,
+            customerPhoneNumber: true,
+          },
+        },
+      },
+    });
+    console.log("=========", secoundResult);
+    if (secoundResult.length > 0) {
+      secoundResult = secoundResult.map((customer) => {
+        const customerData = {
+          customer_first_name: customer.customerFirstName,
+          customer_last_name: customer.customerLastName,
+          active_customer_status: customer.activeCustomerStatus,
+          customer_email: customer.customer.customerEmail,
+          customer_hash: customer.customer.customerHash
+            .replaceAll("/", "-")
+            .replaceAll("+", "_"),
+          customer_added_date: customer.customer.customerAddedDate,
+          customer_phone_number: customer.customer.customerPhoneNumber,
+        };
+        return customerData;
+      });
+    }
+    const newResult = results.concat(secoundResult);
+    return res.status(200).json({ data: newResult });
   } catch (error) {
     console.error("Search failed:", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -49,7 +130,6 @@ exports.getCustomerById = async (req, res, next) => {
 
     res.status(200).json({
       customer: {
-        customer_id: customerInfo.customerId,
         customer_email: customerIdentifier.customerEmail,
         customer_phone_number: customerIdentifier.customerPhoneNumber,
         customer_first_name: customerInfo.customerFirstName,
@@ -170,12 +250,10 @@ exports.getCustomer = async (req, res, next) => {
         };
       })
     );
-    setTimeout(() => {
-      res.json({
-        limit: 10,
-        contacts: customer,
-      });
-    }, 2000);
+    res.json({
+      limit: 10,
+      contacts: customer,
+    });
   } catch (error) {
     next(error);
   }

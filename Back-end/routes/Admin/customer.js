@@ -33,6 +33,8 @@ router.post(
   customerController.postCustomer
 );
 
+router.get("/customer/search", customerController.searchCustomer);
+
 router.get(
   "/customer/:id",
   customerIdValidation(),
@@ -48,7 +50,5 @@ router.put(
   ],
   customerController.updateCustomer
 );
-
-router.get("/customer/search", customerController.searchCustomer);
 
 module.exports = router;
