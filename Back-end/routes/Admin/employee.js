@@ -12,11 +12,11 @@ const {
   empolyRoleValidation,
 } = require("../../util/validation");
 
-router.get("/employee/", employeeController.getEmployee);
+router.get("/employees/", employeeController.getEmployee);
 
 router.get(
   "/employee/:id",
-  [employeeIdValidation()],
+  // [employeeIdValidation()],
   employeeController.getEmployeeById
 );
 
@@ -36,7 +36,12 @@ router.post(
 
 router.put(
   "/employee/:id",
-  [employeeIdValidation()],
+  [
+    nameValidation("employee_first_name", "First name is required"),
+    nameValidation("employee_last_name", "Last name is required"),
+    employeePhoneNumberValidation(),
+    empolyRoleValidation(),
+  ],
   employeeController.updateEmployee
 );
 

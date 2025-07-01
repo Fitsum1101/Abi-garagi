@@ -118,7 +118,7 @@ exports.searchCustomer = async (req, res) => {
 };
 exports.getCustomerById = async (req, res, next) => {
   try {
-    const hashedId = req.params.id;
+    const hashedId = req.params.id.replaceAll("-", "/").replaceAll("_", "+");
 
     const customerIdentifier = await db.customerIdentifier.findUnique({
       where: { customerHash: hashedId },
@@ -134,9 +134,6 @@ exports.getCustomerById = async (req, res, next) => {
         customer_phone_number: customerIdentifier.customerPhoneNumber,
         customer_first_name: customerInfo.customerFirstName,
         customer_last_name: customerInfo.customerLastName,
-        customer_hash: customerIdentifier.customerHash
-          .replaceAll("/", "-")
-          .replaceAll("+", "_"),
         active_customer_status: customerInfo.activeCustomerStatus,
         customer_added_date: customerIdentifier.customerAddedDate,
       },
@@ -199,9 +196,8 @@ exports.updateCustomer = async (req, res, next) => {
       customerFirstName: req.body.customer_first_name,
       customerLastName: req.body.customer_last_name,
     };
-    if (req.body.active_customer_status) {
-      data.activeCustomerStatus = +req.body.active_customer_status;
-    }
+    console.log(req.body.active_customer_status);
+    data.activeCustomerStatus = !req.body.active_customer_status ? 0 : 1;
     await db.customerInfo.update({
       where: { customerId: updatedcustomerIdentifier.customerId },
       data: data,
@@ -244,7 +240,9 @@ exports.getCustomer = async (req, res, next) => {
           customer_phone_number: cust.customerPhoneNumber,
           customer_first_name: info?.customerFirstName,
           customer_last_name: info?.customerLastName,
-          customer_hash: cust.customerHash,
+          customer_hash: cust.customerHash
+            .replaceAll("/", "-")
+            .replaceAll("+", "_"),
           active_customer_status: info?.activeCustomerStatus,
           customer_added_date: fullYearTime(cust.customerAddedDate),
         };

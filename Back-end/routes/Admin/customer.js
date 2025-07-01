@@ -11,6 +11,17 @@ const {
 
 router.get("/customer", customerController.getCustomer);
 
+router.put(
+  "/customer/:id",
+  [
+    // customerIdValidation(),
+    nameValidation("customer_firstName", "Customer first name is required"),
+    nameValidation("customer_lastName", "Customer last name is required"),
+    customerPhoneNumberValidation(),
+  ],
+  customerController.updateCustomer
+);
+
 router.post(
   "/customer",
   [
@@ -33,22 +44,12 @@ router.post(
   customerController.postCustomer
 );
 
-router.get("/customer/search", customerController.searchCustomer);
-
 router.get(
   "/customer/:id",
-  customerIdValidation(),
+  // customerIdValidation(),
   customerController.getCustomerById
 );
-router.put(
-  "/customer/:id",
-  [
-    customerIdValidation(),
-    nameValidation("customer_firstName", "Customer first name is required"),
-    nameValidation("customer_lastName", "Customer last name is required"),
-    customerPhoneNumberValidation(),
-  ],
-  customerController.updateCustomer
-);
+
+router.get("/customer/search", customerController.searchCustomer);
 
 module.exports = router;

@@ -64,7 +64,7 @@ model CommonServices {
 model Employee {
   employeeId     Int                  @id @default(autoincrement())
   employeeEmail  String               @unique
-  activeEmployee Int
+  activeEmployee Int 
   addedDate      DateTime             @default(now())
   role           Role                 @default(EMPLOYEE)
   employeeInfo   EmployeeInfo?

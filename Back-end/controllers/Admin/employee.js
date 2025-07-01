@@ -16,7 +16,7 @@ exports.getEmployee = async (req, res, next) => {
     employee = await Promise.all(
       employee.map(async (emp) => {
         const info = await db.employeeInfo.findUnique({
-          where: { id: emp.employeeId },
+          where: { employeeId: emp.employeeId },
           select: {
             employeePhone: true,
             employeeFirstName: true,
@@ -69,6 +69,7 @@ exports.getEmployeeById = async (req, res, next) => {
         employee_last_name: employeeInfo.employeeLastName,
         active_employee_status: employeeIdentifier.activeEmployee,
         added_date: employeeIdentifier.addedDate,
+        role: employeeIdentifier.role,
       },
     });
   } catch (error) {
@@ -78,7 +79,6 @@ exports.getEmployeeById = async (req, res, next) => {
 
 exports.postEmployee = async (req, res, next) => {
   try {
-    // handle role validation
     const hashedPassword = await bcrypt.hash(req.body.employee_password, 5);
     const employee = await db.employee.create({
       data: {
@@ -121,14 +121,11 @@ exports.updateEmployee = async (req, res, next) => {
       where: { employeeId: id },
     });
 
-    if (!employeeIdentifier) {
-      return res.status(404).json({ error: "Employee not found" });
-    }
-
     await db.employee.update({
       where: { employeeId: id },
       data: {
         activeEmployee: req.body.active_employee_status,
+        role: req.body.employee_role,
       },
     });
 

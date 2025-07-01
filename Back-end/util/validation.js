@@ -64,18 +64,18 @@ exports.customerPhoneNumberValidation = () =>
       return true;
     });
 
-exports.customerIdValidation = () =>
-  param("id").custom(async (value) => {
-    const customer = await db.customerIdentifier.findUnique({
-      where: {
-        customerHash: value,
-      },
-    });
-    if (!customer) {
-      throw new Error("Customer not found");
-    }
-    return true;
-  });
+// exports.customerIdValidation = () =>
+//   param("id").custom(async (value) => {
+//     const customer = await db.customerIdentifier.findUnique({
+//       where: {
+//         customerHash: value,
+//       },
+//     });
+//     if (!customer) {
+//       throw new Error("Customer not found");
+//     }
+//     return true;
+//   });
 
 exports.employeeEmailValidation = (name, message) =>
   body(name)

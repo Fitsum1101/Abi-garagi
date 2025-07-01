@@ -22,9 +22,7 @@ exports.postService = async (req, res, next) => {
 exports.getServices = async (req, res, next) => {
   try {
     const services = await db.commonServices.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      take: 10,
     });
     res.status(200).json({
       services: services.map((service) => ({
