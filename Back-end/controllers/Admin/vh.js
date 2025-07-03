@@ -14,17 +14,27 @@ exports.postVehicle = async (req, res, next) => {
       vehicle_color,
     } = req.body;
 
-    await prisma.CustomerVehicleInfo.create({
+    const customer = await db.customerIdentifier.findUnique({
+      where: {
+        customerHash: customer_id.replaceAll("-", "/").replaceAll("_", "+"),
+      },
+    });
+
+    await db.customerVehicleInfo.create({
       data: {
-        customer_id,
-        vehicle_year,
-        vehicle_make,
-        vehicle_model,
-        vehicle_type,
-        vehicle_mileage,
-        vehicle_tag,
-        vehicle_serial,
-        vehicle_color,
+        customer: {
+          connect: {
+            customerId: customer.customerId,
+          },
+        },
+        vehicleYear: +vehicle_year,
+        vehicleMake: vehicle_make,
+        vehicleModel: vehicle_model,
+        vehicleType: vehicle_type,
+        vehicleMileage: +vehicle_mileage,
+        vehicleTag: vehicle_tag,
+        vehicleSerial: vehicle_serial,
+        vehicleColor: vehicle_color,
       },
     });
     res.status(201).json({
@@ -37,12 +47,19 @@ exports.postVehicle = async (req, res, next) => {
 
 exports.getVechleByCustomerId = async (req, res, next) => {
   try {
-    const customerId = +req.params.id;
-    const vehicles = await db.customerVehicleInfo.findMany({
+    const customerId = req.params.id.replaceAll("-", "/").replaceAll("_", "+");
+    const customer = await db.customerIdentifier.findUnique({
       where: {
-        customerId,
+        customerHash: customerId.replaceAll("-", "/").replaceAll("_", "+"),
       },
     });
+    const vehicles = await db.customerVehicleInfo.findMany({
+      where: {
+        customerId: customer.customerId,
+      },
+    });
+
+    console.log(vehicles);
 
     if (vehicles.length <= 0) {
       return res.json([]);

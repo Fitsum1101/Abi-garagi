@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const customerRoutes = require("./routes/Admin/customer");
 const employeeRoutes = require("./routes/Admin/employee");
 const serviceRoutes = require("./routes/Admin/services");
+const vehicleRoutes = require("./routes/Admin/vh");
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
 app.use(customerRoutes);
 app.use(serviceRoutes);
 app.use(employeeRoutes);
+app.use(vehicleRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Error occurred:", err);

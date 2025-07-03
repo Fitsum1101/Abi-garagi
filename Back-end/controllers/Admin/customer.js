@@ -119,13 +119,21 @@ exports.searchCustomer = async (req, res) => {
 exports.getCustomerById = async (req, res, next) => {
   try {
     const hashedId = req.params.id.replaceAll("-", "/").replaceAll("_", "+");
-
     const customerIdentifier = await db.customerIdentifier.findUnique({
       where: { customerHash: hashedId },
     });
 
     const customerInfo = await db.customerInfo.findUnique({
       where: { customerId: customerIdentifier.customerId },
+    });
+
+    console.log({
+      customer_email: customerIdentifier.customerEmail,
+      customer_phone_number: customerIdentifier.customerPhoneNumber,
+      customer_first_name: customerInfo.customerFirstName,
+      customer_last_name: customerInfo.customerLastName,
+      active_customer_status: customerInfo.activeCustomerStatus,
+      customer_added_date: customerIdentifier.customerAddedDate,
     });
 
     res.status(200).json({

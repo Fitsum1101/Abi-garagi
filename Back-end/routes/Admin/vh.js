@@ -1,16 +1,21 @@
 const router = require("express").Router();
 
 const vhController = require("../../controllers/Admin/vh");
+const {
+  vehicleColorValidation,
+  vehicleMilageValidation,
+  vehicleTypeValidation,
+  vehicleModelValidation,
+  vehicleSerialValidation,
+  vehicleTagValidation,
+  vehcileMakeValidation,
+  vehicleYearValidation,
+} = require("../../util/validation");
 
-//   "customer_id": 1,
-//         "vehicle_year": "2022",
-//         "vehicle_make": "Tesla",
-//         "vehicle_model": "Model S",
-//         "vehicle_type": "Sedan",
-//         "vehicle_mileage": "10000",
-//         "vehicle_tag": "9890Ab2",
-//         "vehicle_serial": "458008887783543435553434",
-//         "vehicle_color": "Silver"
-//       }
+router.post("/vehicle", vhController.postVehicle);
 
-router.post("/vehicle/:id", vhController.postVehicle);
+router.get("/vehicle/:id", vhController.getVechleById);
+
+router.get("/vehicles/:id", vhController.getVechleByCustomerId);
+
+module.exports = router;

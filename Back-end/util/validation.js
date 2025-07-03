@@ -182,3 +182,51 @@ exports.serviceIdValidation = () =>
         throw new Error("Service not found");
       }
     });
+
+exports.vehicleYearValidation = () =>
+  body("vehicle_year")
+    .isInt({ min: 1886, max: new Date().getFullYear() + 1 })
+    .withMessage("Vehicle year must be a valid year");
+exports.vehcileMakeValidation = () =>
+  body("vehicle_make")
+    .isString()
+    .withMessage("Vehicle make must be a string")
+    .notEmpty()
+    .withMessage("Vehicle make is required");
+exports.vehicleModelValidation = () =>
+  body("vehicle_model")
+    .isString()
+    .withMessage("Vehicle model must be a string")
+    .notEmpty()
+    .withMessage("Vehicle model is required");
+
+exports.vehicleTypeValidation = () =>
+  body("vehicle_type")
+    .isString()
+    .withMessage("Vehicle type must be a string")
+    .notEmpty()
+    .withMessage("Vehicle type is required");
+exports.vehicleMilageValidation = () =>
+  body("vehicle_mileage")
+    .isInt({ min: 0 })
+    .withMessage("Vehicle mileage must be a non-negative integer");
+exports.vehicleColorValidation = () =>
+  body("vehicle_color")
+    .isString()
+    .withMessage("Vehicle color must be a string")
+    .notEmpty()
+    .withMessage("Vehicle color is required");
+
+exports.vehicleSerialValidation = () =>
+  body("vehicle_serial")
+    .isString()
+    .withMessage("Vehicle serial must be a string")
+    .notEmpty()
+    .withMessage("Vehicle serial is required");
+
+exports.vehicleTagValidation = () =>
+  body("vehicle_tag")
+    .isString()
+    .withMessage("Vehicle tag must be a string")
+    .notEmpty()
+    .withMessage("Vehicle tag is required");

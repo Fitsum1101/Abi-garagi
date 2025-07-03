@@ -1,8 +1,5 @@
 const router = require("express").Router();
-const bcrypt = require("bcrypt");
-const { body } = require("express-validator");
 
-const db = require("../../util/db");
 const serviceController = require("../../controllers/Admin/services");
 const {
   postServiceValidation,
@@ -14,10 +11,6 @@ router.post(
   [postServiceValidation()],
   serviceController.postService
 );
-
-
-
-
 
 router.get("/services", serviceController.getServices);
 
