@@ -16,6 +16,13 @@ const Input = ({
   serverError,
 }) => {
   const [currentError, setCurrentError] = useState(false);
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    if (defaultValue) {
+      setValue("");
+    }
+  }, [defaultValue]);
 
   useEffect(() => {
     if (serverError) {
@@ -26,12 +33,14 @@ const Input = ({
   }, [serverError]);
 
   const handelChange = (e) => {
-    if (e.target.value.trim().length > 0) {
+    const { value } = e.target;
+    setValue(value);
+    if (value.trim().length > 0) {
       if (serverError) {
         setCurrentError(false);
         setPhoneErrorhandling(serverError);
       }
-    } else if (e.target.value.trim().length === 0) {
+    } else if (value.trim().length === 0) {
       setCurrentError(serverError);
     }
   };
@@ -54,7 +63,7 @@ const Input = ({
       <input
         type={type}
         name={name}
-        defaultValue={defaultValue}
+        value={value}
         placeholder={placeholder}
         onChange={handelChange}
         onBlur={onBlurHandler}
