@@ -1,65 +1,51 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Form,
-  useNavigation,
   data,
+  Form,
+  redirect,
   useActionData,
-  useParams,
-} from "react-router-dom";
+  useLoaderData,
+  useNavigation,
+} from "react-router";
+import Input from "../../components/Input/Input";
 import { ClipLoader } from "react-spinners";
 
-import Input from "../../components/Input/Input";
-
-const Addcustomer = () => {
+const EditEmployee = () => {
   const action = useActionData();
+  const data = useLoaderData();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    const isSetTimeout = action && action.success && true;
-    if (isSetTimeout) {
-      setSuccess(() => {
-        return action.success;
-      });
-      const timeoutId = setTimeout(() => {
-        setSuccess(false);
-      }, 2000);
-      return () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-      };
-    }
-  }, [action]);
-
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
-        Add a new customer
+        Edit{" "}
+        <span>
+          {data.employee.employee_first_name +
+            " " +
+            data.employee.employee_last_name}
+        </span>
         <span className="inline-block h-[.2rem] w-[3rem] self-center ml-1 bg-red-500"></span>
       </p>
-      <Form method="post" className="flex w-[60%]   flex-col gap-4">
+      <Form method="POST" className="flex w-[60%]   flex-col gap-4">
+        <div>
+          <p>
+            Customer email : <span>{data.employee.employee_email}</span>
+          </p>
+        </div>
         {success && (
           <p className="text-green-600 bg-green-50 border-l-4 border-green-500 px-4 py-2 rounded-md shadow-sm text-sm font-medium">
-            customer added successfuly
+            updated successfuly
           </p>
         )}
         <div className="w-full flex flex-col gap-4">
-          <Input
-            type={"email"}
-            width={"100%"}
-            name={"email"}
-            placeholder={"email"}
-            pl={20}
-            py={10}
-            serverError={action && action.email && action.email}
-          />
           <Input
             type={"text"}
             width={"100%"}
             name={"firstName"}
             placeholder={"first name"}
+            defaultValue={data.employee.employee_first_name}
             pl={20}
             py={10}
             serverError={action && action.firstName && action.firstName}
@@ -69,6 +55,7 @@ const Addcustomer = () => {
             width={"100%"}
             name={"lastName"}
             placeholder={"last name"}
+            defaultValue={data.employee.employee_last_name}
             pl={20}
             py={10}
             serverError={action && action.lastName && action.lastName}
@@ -78,13 +65,49 @@ const Addcustomer = () => {
             width={"100%"}
             name={"phone"}
             placeholder={"phone number(0900000000)"}
+            defaultValue={data.employee.employee_phone_number}
             pl={20}
             py={10}
             serverError={action && action.phone && action.phone}
           />
+          <select className="border-1  border-gray-400 pl-2 py-2" name="role">
+            <option
+              className="border-1 pt-2 border-none"
+              selected={data.employee.role.toLowerCase() === "employee"}
+              value="employee"
+            >
+              employee
+            </option>
+            <option
+              selected={data.employee.role.toLowerCase() === "manager"}
+              className="border-1 pt-2 border-none"
+              value="manager"
+            >
+              manager
+            </option>
+            <option
+              selected={data.employee.role.toLowerCase() === "admin"}
+              className="border-1 pt-2 border-none"
+              value="admin"
+            >
+              admin
+            </option>
+          </select>
+          <div>
+            <input
+              type="checkbox"
+              className="cursor-pointer"
+              defaultChecked={data.employee.active_employee_status}
+              name="active"
+              id="active"
+            />
+            <label className="ml-2" htmlFor="active">
+              Is active customer
+            </label>
+          </div>
         </div>
         <button className="self-start cursor-pointer text-center uppercase px-4 text-[14px] py-3 text-white bg-red-600 font-bold">
-          Add customer
+          update customer
         </button>
         {isSubmitting && (
           <ClipLoader
@@ -99,21 +122,35 @@ const Addcustomer = () => {
   );
 };
 
-export default Addcustomer;
+export default EditEmployee;
 
-export const action = async ({ request }) => {
+export async function loader({ params }) {
+  const { id } = params;
+  try {
+    const response = await fetch(`http://localhost:3000/employee/${+id}`);
+
+    if (!response.ok) {
+      throw new Response("Failed to fetch product", {
+        status: response.status,
+      });
+    }
+    const customer = await response.json();
+    return customer;
+  } catch (error) {
+    throw new Response("Network error", { status: 500 });
+  }
+}
+
+export const action = async ({ params, request }) => {
   try {
     const formData = await request.formData();
     const formDatas = Object.fromEntries(formData.entries());
-
     const error = {};
 
+    const { id } = params;
+
     for (let input in formDatas) {
-      if (input === "email") {
-        if (formDatas[input].trim().length === 0)
-          error[input] =
-            "Please enter a valid email address (e.g., example@domain.com).";
-      } else if (input === "firstName") {
+      if (input === "firstName") {
         if (
           formDatas[input].trim().length === 0 ||
           /\d/.test(formDatas[input]) === true
@@ -146,15 +183,18 @@ export const action = async ({ request }) => {
       return data({ ...error }, { status: 400 });
     }
 
+    console.log("=================", formDatas.role);
+
     const toApiData = {
-      customer_email: formDatas.email,
-      customer_phone_number: formDatas.phone,
-      customer_first_name: formDatas.firstName,
-      customer_last_name: formDatas.lastName,
+      employee_first_name: formDatas.firstName,
+      employee_last_name: formDatas.lastName,
+      employee_phone_number: formDatas.phone,
+      employee_role: formDatas.role.toUpperCase(),
+      active_employee_status: formDatas.active ? 1 : 0,
     };
 
-    const response = await fetch("http://localhost:3000/customer", {
-      method: "POST",
+    const response = await fetch("http://localhost:3000/employee/" + id, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -167,21 +207,18 @@ export const action = async ({ request }) => {
       if (response.status === 400) {
         errorData = await response.json();
         errorData = errorData.error;
-        if (errorData.name === "customer_email") {
-          serverErrorData["email"] = errorData.msg;
-        } else if (errorData.name === "customer_first_name") {
+        if (errorData.name === "employee_first_name") {
           serverErrorData["firstName"] = errorData.msg;
-        } else if (errorData.name === "customer_last_name") {
+        } else if (errorData.name === "employee_last_name") {
           serverErrorData["lastName"] = errorData.msg;
-        } else {
+        } else if (errorData.name === "employee_phone") {
           serverErrorData["phone"] = errorData.msg;
         }
-        console.log(serverErrorData);
         return data({ ...serverErrorData }, { status: 400 });
       }
     }
     const serverData = await response.json();
-    return data({ ...serverData }, { status: 201 });
+    return redirect("/admin/employees");
   } catch (error) {
     console.error("Action error:", error);
     return { error: "Submission failed" };

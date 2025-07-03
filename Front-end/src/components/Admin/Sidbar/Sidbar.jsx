@@ -9,6 +9,7 @@ const menuItems = [
   { title: "add employee", link: "/admin/add-employee" },
   { title: "add-customers", link: "/admin/add-customer" },
   { title: "services", link: "/admin/services" },
+  { title: "employees", link: "/admin/employees" },
 ];
 const Sidbar = () => {
   return (

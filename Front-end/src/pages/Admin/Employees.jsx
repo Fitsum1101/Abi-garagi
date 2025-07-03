@@ -1,36 +1,24 @@
 import React, { Suspense } from "react";
 import {
   Await,
-  Form,
   Link,
-  redirect,
   useActionData,
   useAsyncValue,
   useLoaderData,
-  useSubmit,
 } from "react-router-dom";
 
 import EditSquareIcon from "@mui/icons-material/EditSquare";
-import OpenInFullSharpIcon from "@mui/icons-material/OpenInFullSharp";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const Customers = () => {
+const Employees = () => {
   const data = useLoaderData();
 
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
-        Add a new customer
+        Employee
         <span className="inline-block h-[.2rem] w-[3rem] self-center ml-1 bg-red-500"></span>
       </p>
-      <Form className="mb-7" method="post">
-        <input
-          type="search"
-          placeholder="Search a customer by firstName ,lastName ,phone numbre or email"
-          name="search"
-          id="search"
-          className="w-full py-3 px-5 text-[17px] placeholder:italic  bg-white border-1 border-gray-300"
-        />
-      </Form>
       <Suspense
         fallback={
           <h1 className="text-xl text-blue-800 text-center">loading...</h1>
@@ -51,10 +39,10 @@ const Customers = () => {
   );
 };
 
-export default Customers;
+export default Employees;
 
 export async function loader() {
-  return await fetch("http://localhost:3000/customer", {
+  return await fetch("http://localhost:3000/employees", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -62,38 +50,19 @@ export async function loader() {
   });
 }
 
-// routes/searchAction.js
-export async function action({ request }) {
-  const formData = await request.formData();
-  const query = formData.get("search");
-  if (query.trim().length === 0) {
-    return redirect("/admin/customers");
-  }
-  return await fetch(
-    `http://localhost:3000/customer/search?query=${encodeURIComponent(query)}`,
-    {
-      method: "GET",
-    }
-  );
-}
-
 const CustomersTable = () => {
   const customderData = useAsyncValue();
-  const searchCustomerData = useActionData();
-  const isActionDataExist = searchCustomerData && true;
-  let data;
-  if (isActionDataExist) {
-    data = searchCustomerData.data;
-    console.log(data);
-  } else {
-    data = customderData.contacts;
-  }
+  console.log(customderData);
+  let data = customderData.contacts;
   if (data.length > 0)
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full   border border-amber-600 text-left">
           <thead className="capitalize">
             <tr className="bg-gray-100">
+              <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
+                active
+              </th>
               <th className=" pl-2 uppercase  py-2 font-bold border border-gray-300  text-gray-700">
                 id
               </th>
@@ -114,9 +83,6 @@ const CustomersTable = () => {
                 added date
               </th>
               <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
-                active
-              </th>
-              <th className="pl-2  py-2 text-sm border border-gray-300 font-semibold text-gray-700">
                 edit
               </th>
             </tr>
@@ -129,34 +95,34 @@ const CustomersTable = () => {
                 } capitalize transition text-[16px]`}
                 key={key}
               >
+                <td className="pl-2 py-1 border border-gray-300 ">
+                  {row.active_employee === 1 ? "yes" : "no"}
+                </td>
                 <td className="pl-2 py-2 font-bold border border-gray-300 ">
                   {key + 1}
                 </td>
                 <td className="pl-2  py-2 border font-bold border-gray-300 ">
-                  {row.customer_first_name}
+                  {row.employee_first_name}
                 </td>
                 <td className="pl-2  py-2 border font-bold border-gray-300 ">
-                  {row.customer_last_name}
+                  {row.employee_last_name}
                 </td>
                 <td className="pl-2  py-2 border border-gray-300 ">
-                  {row.customer_email}
+                  {row.employee_email}
                 </td>
                 <td className="pl-2 py-1 border border-gray-300 ">
-                  {row.customer_phone_number}
+                  {row.employee_phone}
                 </td>
                 <td className="pl-2 py-1 border border-gray-300 ">
-                  {row.customer_added_date}
-                </td>
-                <td className="pl-2 py-1 border border-gray-300 ">
-                  {row.active_customer_status === 1 ? "yes" : "no"}
+                  {row.added_date}
                 </td>
                 <td className="pl-4 py-1 border border-gray-300 ">
-                  <div className="flex gap-2">
-                    <Link to={`/admin/customer/edit/${row.customer_hash}`}>
+                  <div className="flex justify-center items-center gap-2">
+                    <Link to={`/admin/employee/edit/${row.employee_id}`}>
                       <EditSquareIcon fontSize="small" />
                     </Link>
-                    <Link to={"/admin/customer/profile/" + row.customer_hash}>
-                      <OpenInFullSharpIcon fontSize="small" className="ml-2" />
+                    <Link>
+                      <DeleteIcon fontSize="small" />
                     </Link>
                   </div>
                 </td>
@@ -166,5 +132,5 @@ const CustomersTable = () => {
         </table>
       </div>
     );
-  else return <h1>no customer data yet</h1>;
+  else return <h1>no employee data yet</h1>;
 };
