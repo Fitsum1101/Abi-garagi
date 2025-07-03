@@ -38,7 +38,7 @@ model CustomerInfo {
 
 model CustomerVehicleInfo {
   vehicleId Int @id @default(autoincrement())
-  customerId Int
+  customerId Int 
   vehicleYear Int
   vehicleMake String
   vehicleModel String
