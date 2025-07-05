@@ -20,7 +20,7 @@ const EditCustomer = () => {
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
-        Edit{" "}
+        Edit
         <span>
           {data.customer.customer_first_name +
             " " +
@@ -112,7 +112,6 @@ export async function loader({ params }) {
       });
     }
     const customer = await response.json();
-    console.log(customer);
     return customer;
   } catch (error) {
     throw new Response("Network error", { status: 500 });

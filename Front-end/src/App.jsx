@@ -38,6 +38,7 @@ import {
   loader as customerProfileLoader,
   vehicleAction,
 } from "./pages/Admin/CustomerProfile";
+import Neworder from "./pages/Admin/Neworder";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,8 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminLayout />,
+        loader: serviceLoader,
+        id: "service",
         children: [
           { index: true, element: <Admin /> },
           {
@@ -97,8 +100,11 @@ const router = createBrowserRouter([
           {
             path: "services",
             element: <AdminServices />,
-            loader: serviceLoader,
             action: serviceAction,
+          },
+          {
+            path: "new-order",
+            element: <Neworder />,
           },
         ],
       },

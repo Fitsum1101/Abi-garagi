@@ -4,11 +4,11 @@ import EditSquareIcon from "@mui/icons-material/EditSquare";
 
 const CustomerInfo = ({ email, phone, active, id, firstName, lastName }) => {
   return (
-    <div>
+    <div className="p-4 border border-t-0 border-gray-300 bg-white">
       <div>
-        <div className="mb-3">
-          <h1 className="text-2xl font-semibold text-blue-950">
-            Customer: <span>{firstName + " " + lastName}</span>
+        <div className="">
+          <h1 className="text-2xl capitalize font-semibold text-blue-950">
+            <span>{firstName + " " + lastName}</span>
           </h1>
         </div>
         <div className="flex flex-col gap-1 font-bold text-gray-800 capitalize">

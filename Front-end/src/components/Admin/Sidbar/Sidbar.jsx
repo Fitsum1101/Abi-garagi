@@ -5,7 +5,7 @@ const menuItems = [
   { title: "Dashboard", link: "/admin" },
   { title: "orders", link: "/admin/orders" },
   { title: "customers", link: "/admin/customers" },
-  { title: "New orders", link: "/admin/new-orders" },
+  { title: "New orders", link: "/admin/new-order" },
   { title: "add employee", link: "/admin/add-employee" },
   { title: "add-customers", link: "/admin/add-customer" },
   { title: "services", link: "/admin/services" },

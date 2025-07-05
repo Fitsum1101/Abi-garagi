@@ -67,7 +67,7 @@ const Input = ({
         placeholder={placeholder}
         onChange={handelChange}
         onBlur={onBlurHandler}
-        className={` border-1 placeholder:italic placeholder:text-gray-400 placeholder:capitalize outline-none border-gray-300 ${
+        className={` border-1 placeholder:italic focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 placeholder:text-gray-400 placeholder:capitalize outline-none border-gray-300 ${
           currentError
             ? "border-2 border-red-500 bg-red-50 text-red-600 placeholder-red-400 focus:ring-2 focus:ring-red-300 focus:border-red-500 rounded-md px-4 py-2 text-sm font-medium w-full outline-none"
             : undefined

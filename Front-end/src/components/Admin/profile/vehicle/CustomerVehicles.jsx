@@ -10,12 +10,12 @@ const CustomerVehicle = ({ vehicles }) => {
           <p className="p-2 w-full text-gray-500 ">No vehicle found</p>
         )}
       </div>
-      <div>
+      <div className="p-4 border border-t-0 border-gray-300 bg-white">
         {vehicles.length >= 1 &&
           vehicles.map((vehicle, id) => (
             <div>
-              <div className="mb-3">
-                <h1 className="text-2xl font-semibold text-blue-950">
+              <div>
+                <h1 className="text-2xl capitalize font-semibold text-blue-950">
                   {vehicle.vehicle_model}
                 </h1>
               </div>

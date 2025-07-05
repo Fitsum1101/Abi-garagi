@@ -1,11 +1,11 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditSquareIcon from "@mui/icons-material/EditSquare";
 import Input from "../../components/Input/Input";
-import { Link, Form, redirect, useLoaderData, Await } from "react-router";
+import { Link, Form, redirect, Await, useRouteLoaderData } from "react-router";
 import React from "react";
 
 const Serivce = () => {
-  const { services } = useLoaderData();
+  const { services } = useRouteLoaderData("service");
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold text-blue-950 capitalize">
