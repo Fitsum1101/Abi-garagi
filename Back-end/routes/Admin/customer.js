@@ -1,18 +1,41 @@
 const router = require("express").Router();
 
 const { validateResultMiddle } = require("../../middleware/validationResult");
+const { authenticateToken } = require("../../middleware/authenticateToken");
+const authroizeRole = require("../../middleware/authroizeRole");
+
 const customerController = require("../../controllers/Admin/customer");
+
 const {
   nameValidation,
   customerEmailValidation,
   customerPhoneNumberValidation,
-  customerIdValidation,
 } = require("../../util/validation");
 
-router.get("/customer", customerController.getCustomer);
+router.get(
+  "/customer/search",
+  authenticateToken,
+  customerController.searchCustomer
+);
+
+router.get(
+  "/customer/:id",
+  authenticateToken,
+  authroizeRole("MANAGER"),
+  customerController.getCustomerById
+);
+
+router.get(
+  "/customer",
+  authenticateToken,
+  authroizeRole("MANAGER"),
+  customerController.getCustomer
+);
 
 router.put(
   "/customer/:id",
+  authenticateToken,
+  authroizeRole("MANAGER"),
   [
     // customerIdValidation(),
     nameValidation("customer_firstName", "Customer first name is required"),
@@ -24,6 +47,8 @@ router.put(
 
 router.post(
   "/customer",
+  authenticateToken,
+  authroizeRole("MANAGER"),
   [
     customerEmailValidation(
       "customer_email",
@@ -43,13 +68,5 @@ router.post(
   validateResultMiddle,
   customerController.postCustomer
 );
-
-router.get(
-  "/customer/:id",
-  // customerIdValidation(),
-  customerController.getCustomerById
-);
-
-router.get("/customer/search", customerController.searchCustomer);
 
 module.exports = router;

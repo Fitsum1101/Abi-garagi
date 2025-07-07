@@ -59,13 +59,11 @@ exports.getVechleByCustomerId = async (req, res, next) => {
       },
     });
 
-    console.log(vehicles);
-
     if (vehicles.length <= 0) {
       return res.json([]);
     }
     const CustomerVehicles = vehicles.map((vehicle) => ({
-      vehicle_id: vehicle.id,
+      vehicle_id: vehicle.vehicleId,
       customer_id: vehicle.customerId,
       vehicle_year: vehicle.vehicleYear,
       vehicle_make: vehicle.vehicleMake,
@@ -103,6 +101,43 @@ exports.getVechleById = async (req, res, next) => {
       vehicle_tag: vehicle.vehicleTag,
       vehicle_serial: vehicle.vehicleSerial,
       vehicle_color: vehicle.vehicleColor,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.updateVehicle = async (req, res, next) => {
+  try {
+    const {
+      vehicle_id,
+      vehicle_year,
+      vehicle_make,
+      vehicle_model,
+      vehicle_type,
+      vehicle_mileage,
+      vehicle_tag,
+      vehicle_serial,
+      vehicle_color,
+    } = req.body;
+
+    const updatedVehicle = await db.customerVehicleInfo.update({
+      where: {
+        vehicleId: vehicle_id,
+      },
+      data: {
+        vehicleYear: +vehicle_year,
+        vehicleMake: vehicle_make,
+        vehicleModel: vehicle_model,
+        vehicleType: vehicle_type,
+        vehicleMileage: +vehicle_mileage,
+        vehicleTag: vehicle_tag,
+        vehicleColor: vehicle_color,
+        vehicleSerial: vehicle_serial,
+      },
+    });
+    res.status(200).json({
+      success: "true",
+      message: "Vehicle updated successfully.",
     });
   } catch (error) {
     next(error);

@@ -1,5 +1,7 @@
 const router = require("express").Router();
 
+const { authenticateToken } = require("../../middleware/authenticateToken");
+
 const vhController = require("../../controllers/Admin/vh");
 const {
   vehicleColorValidation,
@@ -12,10 +14,14 @@ const {
   vehicleYearValidation,
 } = require("../../util/validation");
 
-router.post("/vehicle", vhController.postVehicle);
+router.post("/vehicle", authenticateToken, vhController.postVehicle);
 
-router.get("/vehicle/:id", vhController.getVechleById);
+router.get("/vehicle/:id", authenticateToken, vhController.getVechleById);
 
-router.get("/vehicles/:id", vhController.getVechleByCustomerId);
+router.get(
+  "/vehicles/:id",
+  authenticateToken,
+  vhController.getVechleByCustomerId
+);
 
 module.exports = router;

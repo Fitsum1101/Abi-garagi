@@ -5,6 +5,8 @@ const customerRoutes = require("./routes/Admin/customer");
 const employeeRoutes = require("./routes/Admin/employee");
 const serviceRoutes = require("./routes/Admin/services");
 const vehicleRoutes = require("./routes/Admin/vh");
+const orderRoutes = require("./routes/Admin/order");
+const authRoutes = require("./routes/Auth/login");
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use(customerRoutes);
 app.use(serviceRoutes);
 app.use(employeeRoutes);
 app.use(vehicleRoutes);
+app.use(orderRoutes);
+app.use(authRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Error occurred:", err);

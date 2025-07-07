@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 
 const db = require("../../util/db");
 
+const authorizeRole = require("../../middleware/authroizeRole");
+
 exports.searchCustomer = async (req, res) => {
   const { query } = req.query;
   try {
@@ -92,7 +94,6 @@ exports.searchCustomer = async (req, res) => {
         },
       },
     });
-    console.log("=========", secoundResult);
     if (secoundResult.length > 0) {
       secoundResult = secoundResult.map((customer) => {
         const customerData = {
@@ -116,6 +117,7 @@ exports.searchCustomer = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 exports.getCustomerById = async (req, res, next) => {
   try {
     const hashedId = req.params.id.replaceAll("-", "/").replaceAll("_", "+");
@@ -125,15 +127,6 @@ exports.getCustomerById = async (req, res, next) => {
 
     const customerInfo = await db.customerInfo.findUnique({
       where: { customerId: customerIdentifier.customerId },
-    });
-
-    console.log({
-      customer_email: customerIdentifier.customerEmail,
-      customer_phone_number: customerIdentifier.customerPhoneNumber,
-      customer_first_name: customerInfo.customerFirstName,
-      customer_last_name: customerInfo.customerLastName,
-      active_customer_status: customerInfo.activeCustomerStatus,
-      customer_added_date: customerIdentifier.customerAddedDate,
     });
 
     res.status(200).json({
@@ -204,7 +197,6 @@ exports.updateCustomer = async (req, res, next) => {
       customerFirstName: req.body.customer_first_name,
       customerLastName: req.body.customer_last_name,
     };
-    console.log(req.body.active_customer_status);
     data.activeCustomerStatus = !req.body.active_customer_status ? 0 : 1;
     await db.customerInfo.update({
       where: { customerId: updatedcustomerIdentifier.customerId },
