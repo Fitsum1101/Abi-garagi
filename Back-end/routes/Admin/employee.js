@@ -2,6 +2,7 @@ const router = require("express").Router();
 
 const { validateResultMiddle } = require("../../middleware/validationResult");
 const { authenticateToken } = require("../../middleware/authenticateToken");
+const authroizeRole = require("../../middleware/authroizeRole");
 
 const employeeController = require("../../controllers/Admin/employee");
 
@@ -14,18 +15,25 @@ const {
   empolyRoleValidation,
 } = require("../../util/validation");
 
-router.get("/employees/", authenticateToken, employeeController.getEmployee);
+router.get(
+  "/employees/",
+  authenticateToken,
+  authroizeRole("MANAGER"),
+  employeeController.getEmployee
+);
 
 router.get(
   "/employee/:id",
   authenticateToken,
   // [employeeIdValidation()],
+  authroizeRole("MANAGER"),
   employeeController.getEmployeeById
 );
 
 router.post(
   "/employee/",
   authenticateToken,
+  authroizeRole("MANAGER"),
   [
     employeeEmailValidation("employee_email", "Email is required"),
     nameValidation("employee_first_name", "First name is required"),
@@ -41,6 +49,7 @@ router.post(
 router.put(
   "/employee/:id",
   authenticateToken,
+  authroizeRole("MANAGER"),
   [
     nameValidation("employee_first_name", "First name is required"),
     nameValidation("employee_last_name", "Last name is required"),

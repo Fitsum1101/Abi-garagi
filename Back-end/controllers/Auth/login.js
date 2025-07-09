@@ -5,11 +5,10 @@ const bcrypt = require("bcrypt");
 
 exports.postLogin = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    console.log(email, password);
+    const { employee_email, employee_password } = req.body;
     const employee = await db.employee.findUnique({
       where: {
-        employeeEmail: email,
+        employeeEmail: employee_email,
       },
       include: {
         employeePass: {
@@ -20,27 +19,13 @@ exports.postLogin = async (req, res, next) => {
       },
     });
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      employee.employeePass.employeePasswordHashed
-    );
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
     const updatedEmployee = {
       employee_id: employee.employeeId,
       employee_email: employee.employeeEmail,
       role: employee.role,
     };
 
-    const token = jwt.sign(employee, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(updatedEmployee, process.env.JWT_SECRET_KEY);
 
     res.status(200).json({
       success: true,

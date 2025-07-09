@@ -4,8 +4,30 @@ const db = require("../../util/db");
 
 exports.getEmployee = async (req, res, next) => {
   try {
+    const user = req.employee;
     let employee = await db.employee.findMany({
       take: 10,
+      where: {
+        AND: [
+          {
+            employeeId: {
+              not: {
+                equals: user.employeeId,
+              },
+            },
+          },
+          {
+            role: {
+              not: {
+                equals: "ADMIN",
+              },
+            },
+          },
+          {
+            activeEmployee: 1,
+          },
+        ],
+      },
       select: {
         employeeEmail: true,
         employeeId: true,
@@ -13,6 +35,8 @@ exports.getEmployee = async (req, res, next) => {
         activeEmployee: true,
       },
     });
+
+    console.log(employee);
     employee = await Promise.all(
       employee.map(async (emp) => {
         const info = await db.employeeInfo.findUnique({
@@ -47,7 +71,20 @@ exports.getEmployeeById = async (req, res, next) => {
   try {
     const id = +req.params.id;
     const employeeIdentifier = await db.employee.findUnique({
-      where: { employeeId: id },
+      where: {
+        AND: [
+          {
+            employeeId: id,
+          },
+          {
+            role: {
+              not: {
+                equals: "ADMIN",
+              },
+            },
+          },
+        ],
+      },
     });
     if (!employeeIdentifier) {
       return res.status(404).json({ error: "Employee not found" });
@@ -78,12 +115,14 @@ exports.getEmployeeById = async (req, res, next) => {
 };
 
 exports.postEmployee = async (req, res, next) => {
+  const user = req.user;
   try {
     const hashedPassword = await bcrypt.hash(req.body.employee_password, 5);
     const employee = await db.employee.create({
       data: {
         employeeEmail: req.body.employee_email,
         activeEmployee: 1,
+        addedById: user.employeeId,
         addedDate: new Date().toISOString(),
         role: req.body.role || "EMPLOYEE",
       },

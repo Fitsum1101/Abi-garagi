@@ -59,13 +59,16 @@ model CommonServices {
 model Employee {
   employeeId     Int                  @id @default(autoincrement())
   employeeEmail  String               @unique
-  activeEmployee Int 
+  addedById       Int?       // This is the FK to another employee's ID
+  addedBy         Employee?           @relation("EmployeeAddedBy", fields: [addedById], references: [employeeId])   
+  addedEmployees Employee[]           @relation("EmployeeAddedBy") // Inverse side of the relation
   addedDate      DateTime             @default(now())
   role           Role                 @default(EMPLOYEE)
   employeeInfo   EmployeeInfo?
   employeePass   EmployeePass?
   orders        Order[]
 }
+
 
 model EmployeeInfo {
   employeeInfoId Int @id @default(autoincrement())
@@ -82,7 +85,6 @@ model EmployeePass {
   employeePasswordHashed String
   employee           Employee @relation(fields: [employeeId], references: [employeeId])
 }
-
 
 model Order {
   orderId       Int                  @id @default(autoincrement())
@@ -128,3 +130,4 @@ enum OrderStatus{
     completed
     recieved
 }
+

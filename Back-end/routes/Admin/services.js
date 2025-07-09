@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const { authenticateToken } = require("../../middleware/authenticateToken");
+const authroizeRole = require("../../middleware/authroizeRole");
 
 const serviceController = require("../../controllers/Admin/services");
 const {
@@ -19,6 +20,7 @@ router.get("/services", serviceController.getServices);
 router.get(
   "/service/:id",
   authenticateToken,
+  authroizeRole("MANAGER"),
   [serviceIdValidation()],
   serviceController.getServicesById
 );
@@ -26,6 +28,7 @@ router.get(
 router.delete(
   "/service/:id",
   authenticateToken,
+  authroizeRole("MANAGER"),
   [serviceIdValidation()],
   serviceController.deleteService
 );
@@ -33,6 +36,7 @@ router.delete(
 router.put(
   "/service/:id",
   authenticateToken,
+  authroizeRole("MANAGER"),
   [],
   serviceController.updateService
 );

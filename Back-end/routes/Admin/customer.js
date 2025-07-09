@@ -13,6 +13,13 @@ const {
 } = require("../../util/validation");
 
 router.get(
+  "/customer",
+  authenticateToken,
+  authroizeRole("EMPLOYEE"),
+  customerController.getCustomer
+);
+
+router.get(
   "/customer/search",
   authenticateToken,
   customerController.searchCustomer
@@ -23,13 +30,6 @@ router.get(
   authenticateToken,
   authroizeRole("MANAGER"),
   customerController.getCustomerById
-);
-
-router.get(
-  "/customer",
-  authenticateToken,
-  authroizeRole("MANAGER"),
-  customerController.getCustomer
 );
 
 router.put(

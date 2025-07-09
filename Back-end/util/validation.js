@@ -1,6 +1,7 @@
 const db = require("./db");
 
 const { body, param } = require("express-validator");
+const bcrypt = require("bcrypt");
 
 const allowedRoles = ["admin", "employee", "manager"];
 
@@ -82,11 +83,17 @@ exports.employeeEmailValidation = (name, message) =>
     .trim()
     .notEmpty()
     .withMessage(message)
-    .custom(async (value) => {
+    .custom(async (value, { req }) => {
+      const isLoginUrl = req.originalUrl === "/login";
       const existingEmployee = await db.employee.findFirst({
         where: { employeeEmail: value },
       });
-      if (existingEmployee) {
+
+      console.log(existingEmployee);
+
+      if (isLoginUrl && !existingEmployee) throw new Error("Email not exists");
+
+      if (!isLoginUrl && existingEmployee) {
         throw new Error("Email already exists");
       }
       return true;
@@ -95,9 +102,32 @@ exports.employeeEmailValidation = (name, message) =>
 exports.employeePasswordValidation = () =>
   body("employee_password")
     .trim()
-    .custom((value) => {
+    .custom(async (value, req) => {
+      const isLoginUrl = req.originalUrl === "/admin/login";
       if (value.length < 6) {
         throw new Error("Password must be at least 6 characters long");
+      }
+      console.log(req.body);
+      if (isLoginUrl) {
+        const employee = await db.employee.findFirst({
+          where: {
+            employeeEmail: req.body.employeeEmail,
+          },
+          include: {
+            employeePass: {
+              select: {
+                employeePasswordHashed: true,
+              },
+            },
+          },
+        });
+        const isCorrectPassword = bcrypt.compare(
+          value,
+          employee.employeePass.employeePasswordHashed
+        );
+        if (!isCorrectPassword) {
+          throw new Error("password does't match please try again!");
+        }
       }
       return true;
     });

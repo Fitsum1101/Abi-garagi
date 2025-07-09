@@ -3,7 +3,9 @@ const { encryptOrderId, decryptOrderId } = require("../../util/crypto");
 
 exports.postOrder = async (req, res) => {
   try {
-    const { employee_id, customer_id, vehicle_id, order_services, price } =
+    const employee = req.user;
+
+    const { employeeId, customer_id, vehicle_id, order_services, price } =
       req.body;
 
     let orderServiceId;
@@ -14,7 +16,6 @@ exports.postOrder = async (req, res) => {
     } else {
       orderServiceId = [];
     }
-
     const customer = await db.customerIdentifier.findFirst({
       where: {
         customerHash: customer_id.replaceAll("-", "/").replaceAll("_", "+"),
@@ -22,7 +23,7 @@ exports.postOrder = async (req, res) => {
     });
     const newOrder = await db.order.create({
       data: {
-        employeeId: employee_id,
+        employeeId,
         customerId: customer.customerId,
         vehicleId: +vehicle_id,
         price,
@@ -53,7 +54,23 @@ exports.postOrder = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
+    const employee = req.user;
+
     const orders = await db.order.findMany({
+      where: {
+        OR: [
+          {
+            employee: {
+              addedBy: employee.employeeId,
+            },
+          },
+          {
+            employee: {
+              role: "ADMIN",
+            },
+          },
+        ],
+      },
       include: {
         orderServices: {
           select: {
@@ -94,6 +111,7 @@ exports.getAllOrders = async (req, res) => {
         orderDate: "desc",
       },
     });
+
     const transformedOrders = orders.map((order) => {
       const customer = order.customer || {};
       const vehicle = order.vehicle || {};
@@ -137,12 +155,29 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrder = async (req, res) => {
   try {
     const { id } = req.params;
+    const employee = req.user;
 
     const orderId = decryptOrderId(id);
 
     const order = await db.order.findUnique({
       where: {
-        orderId: orderId,
+        AND: [
+          { orderId: orderId },
+          {
+            OR: [
+              {
+                employee: {
+                  addedBy: employee.employeeId,
+                },
+              },
+              {
+                employee: {
+                  role: "ADMIN",
+                },
+              },
+            ],
+          },
+        ],
       },
       include: {
         orderServices: {
@@ -175,6 +210,16 @@ exports.getOrder = async (req, res) => {
             },
           },
         },
+        employee: {
+          include: {
+            employeeInfo: {
+              select: {
+                employeeFirstName: true,
+                employeeLastName: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -185,6 +230,7 @@ exports.getOrder = async (req, res) => {
     const customer = order.customer || {};
     const vehicle = order.vehicle || {};
     const orderServices = order.orderServices || {};
+    const employeeInfo = employee.employeeInfo || {};
 
     const serviceStatuses = orderServices.map((os) => os.serviceCompleted);
 
@@ -203,6 +249,8 @@ exports.getOrder = async (req, res) => {
         customerPhoneNumber: customer.customerPhoneNumber,
         customerFirstName: customer.customerInfo.customerFirstName,
         customerLastName: customer.customerInfo.customerLastName,
+        mechaFirstName: employeeInfo.employeeFirstName,
+        mechaLastName: employeeInfo.employeeLastName,
         vehicleMileage: vehicle.vehicleMileage,
         vehicleTag: vehicle.vehicleTag,
         vehicleYear: vehicle.vehicleYear,
