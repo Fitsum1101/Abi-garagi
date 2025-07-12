@@ -6,6 +6,9 @@ import {
   useAsyncValue,
   useLoaderData,
 } from "react-router-dom";
+import { getToken } from "../../util/token";
+
+const token = getToken();
 
 import EditSquareIcon from "@mui/icons-material/EditSquare";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -46,6 +49,7 @@ export async function loader() {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 }

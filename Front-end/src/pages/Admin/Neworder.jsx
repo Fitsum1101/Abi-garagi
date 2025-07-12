@@ -1,79 +1,39 @@
-import { Form, Link, useRouteLoaderData, useSubmit } from "react-router";
+import { redirect, Link, useRouteLoaderData, useSubmit } from "react-router";
 import PanToolAltIcon from "@mui/icons-material/PanToolAlt";
 import { use, useEffect, useState } from "react";
 import { CustomerContext } from "../../context/customer-context";
 import CustomerInfo from "../../components/Admin/profile/CustomerInfo";
 import CustomerVehicle from "../../components/Admin/profile/vehicle/CustomerVehicles";
 import Input from "../../components/Input/Input";
+import { getToken } from "../../util/token";
+import useFetch from "../../hooks/useFetch";
+const token = getToken();
 const Neworder = () => {
   const [searchValue, setSearchValue] = useState(undefined);
-  const [customer, setCustomer] = useState();
-  const [vehicle, setVehicle] = useState([]);
   const customerCtx = use(CustomerContext);
-
-  const [error, setError] = useState();
-  const [searchLoading, setSearchLoading] = useState(false);
+  let role;
 
   const isCustomerSeleted = Object.values(customerCtx.customer).length > 0;
-  const isVehicleSelected = customerCtx.vhicle.length > 0;
+  const isVehicleSelected =
+    isCustomerSeleted && Object.values(customerCtx.vhicle).length > 0;
+  const isMechaniceSelected = Object.values(customerCtx.mechanice).length > 0;
+
+  if (isCustomerSeleted && isVehicleSelected) role = "employee";
+
+  const customer = useFetch(
+    "http://localhost:3000/customer/search?query=",
+    searchValue
+  );
+  const vehicle = useFetch(
+    "http://localhost:3000/vehicles/",
+    customerCtx.customer.customer_hash
+  );
+  const mechanice = useFetch("http://localhost:3000/employees/role/", role);
 
   const handleSearch = (e) => {
     const search = e.target.value;
     if (search.length > 0) setSearchValue(search);
   };
-
-  useEffect(() => {
-    if (isCustomerSeleted) {
-      const fetchData = async () => {
-        try {
-          setSearchLoading(true);
-          const response = await fetch(
-            `http://localhost:3000/vehicles/` +
-              customerCtx.customer.customer_hash,
-            {
-              method: "GET",
-            }
-          );
-          if (!response.ok) {
-            throw Error("something want wrong");
-          }
-          setSearchLoading(false);
-          const data = await response.json();
-          setVehicle(data);
-        } catch (error) {
-          setError(error);
-          setSearchLoading(false);
-        }
-      };
-      fetchData();
-    }
-  }, [customerCtx.customer]);
-
-  useEffect(() => {
-    if (searchValue) {
-      const fetchData = async () => {
-        try {
-          setSearchLoading(true);
-          const response = await fetch(
-            `http://localhost:3000/customer/search?query=` + searchValue,
-            {
-              method: "GET",
-            }
-          );
-          if (!response.ok) {
-            throw Error("something want wrong");
-          }
-          setSearchLoading(false);
-          const data = await response.json();
-          setCustomer(data);
-        } catch (error) {
-          setError(error);
-          setSearchLoading(false);
-        }
-      };
-      fetchData();
-    }
-  }, [searchValue]);
 
   return (
     <div className="p-10">
@@ -93,16 +53,19 @@ const Neworder = () => {
             onChange={handleSearch}
             className="w-full py-3 px-5 text-[17px] placeholder:italic  bg-white border-1 border-gray-300"
           />
-          <Link>
-            <button className="self-start cursor-pointer text-center uppercase px-4 text-[14px] py-3 text-white bg-red-600 font-bold">
-              Add new Customer
-            </button>
-          </Link>
+
+          {customer.data && customer.data.data.length <= 0 && (
+            <Link>
+              <button className="self-start cursor-pointer text-center uppercase px-4 text-[14px] py-3 text-white bg-red-600 font-bold">
+                Add new Customer
+              </button>
+            </Link>
+          )}
         </div>
       )}
-      <div className="mb-3">
+      <div className="mb-3 mt-3">
         {!isCustomerSeleted && customer && customer.data && (
-          <CustomerTable data={customer.data} />
+          <CustomerTable data={customer.data.data} />
         )}
         {isCustomerSeleted && (
           <CustomerInfo
@@ -110,27 +73,60 @@ const Neworder = () => {
             email={customerCtx.customer.customer_email}
             firstName={customerCtx.customer.customer_first_name}
             lastName={customerCtx.customer.customer_last_name}
-            // id={id}
             phone={customerCtx.customer.customer_phone_number}
           />
         )}
       </div>
       <div className="mb-3">
-        {!isVehicleSelected && vehicle.length > 0 && (
+        {isCustomerSeleted && !isVehicleSelected && vehicle.data && (
           <div className="px-4 pt-8 pb-8 bg-white">
             <h1 className="text-2xl mb-2 font-semibold text-blue-950">
               Choose a vehicle
             </h1>
-            <VheicleTable data={vehicle} />
+            <VheicleTable data={vehicle.data} />
           </div>
         )}
         {vehicle.length <= 0 && (
-          <p className="p-2 w-full text-gray-500 ">No vehicle found</p>
+          <p className="p-2 w-full text-red-500 ">No vehicle found</p>
         )}
         {isVehicleSelected && <CustomerVehicle vehicles={customerCtx.vhicle} />}
       </div>
-      {isCustomerSeleted && isVehicleSelected && (
-        <div className=" ">
+
+      <div className="mb-3">
+        {isCustomerSeleted &&
+          isVehicleSelected &&
+          mechanice.data &&
+          !isMechaniceSelected && (
+            <div className="px-4 pt-8 pb-8 bg-white">
+              <h1 className="text-2xl mb-2 font-semibold text-blue-950">
+                Choose a Mechanice
+              </h1>
+              <MechanicTable data={mechanice.data.employee} />
+            </div>
+          )}
+        {isMechaniceSelected && (
+          <div className="px-4 pt-8 pb-8 bg-white">
+            <h1 className="text-2xl mb-2 font-semibold text-blue-950">
+              Mechanice
+            </h1>
+            <p className=" font-bold  text-gray-800 capitalize">
+              firstName:
+              <span className="text-gray-400 font-semibold ml-1">
+                {customerCtx.mechanice.employee_first_name}
+              </span>
+            </p>
+            <p className=" font-bold text-gray-800 capitalize">
+              lastName:
+              <span className="text-gray-400 font-semibold ml-1">
+                {customerCtx.mechanice.employee_last_name}
+              </span>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {isCustomerSeleted && isVehicleSelected && isMechaniceSelected && (
+        <div className="">
           <div className="px-4 border border-t-0  border-gray-300 pt-8 pb-8 mb-3 bg-white flex gap-3 flex-col">
             <div className="flex justify-between font-semibold">
               <h1 className="text-2xl mb-2 font-semibold text-blue-950">
@@ -149,6 +145,38 @@ const Neworder = () => {
 };
 
 export default Neworder;
+
+const MechanicTable = ({ data }) => {
+  const customer = use(CustomerContext);
+
+  const handleMechanice = (data) => customer.setMechanice(data);
+
+  return (
+    <table className="w-full">
+      <tbody>
+        {data.map((row, key) => (
+          <tr
+            onClick={() => handleMechanice(row)}
+            className={`  hover:bg-gray-300 cursor-pointer  ${
+              (key + 1) % 2 !== 0 ? "bg-gray-200" : null
+            } capitalize transition text-[16px]`}
+            key={key}
+          >
+            <td className="pl-2  py-2 border font-bold border-gray-300 ">
+              {row.employee_first_name}
+            </td>
+            <td className="pl-2  py-2 border font-bold border-gray-300 ">
+              {row.employee_last_name}
+            </td>
+            <td className="pl-2  py-2 border font-bold border-gray-300 ">
+              <PanToolAltIcon />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 const CustomerTable = ({ data }) => {
   const customer = use(CustomerContext);
@@ -191,7 +219,6 @@ const CustomerTable = ({ data }) => {
 const VheicleTable = ({ data }) => {
   const customer = use(CustomerContext);
   const handleVehicle = (data) => customer.setVehicle([data]);
-
   return (
     <table className="w-full">
       <tbody>
@@ -243,7 +270,7 @@ const Order = () => {
   const sumbit = useSubmit();
   const handleForm = (event) => {
     event.preventDefault();
-    ctx.setIsOrderSubmit(true);
+    if (ctx.serviceId.length <= 0) return ctx.setIsOrderSubmit(true);
     const form = event.target;
     const formData = new FormData(form);
     const price = formData.get("price");
@@ -253,6 +280,16 @@ const Order = () => {
       );
     }
     const description = formData.get("description");
+    sumbit(
+      {
+        employee_id: ctx.mechanice.employee_id,
+        customer_id: ctx.customer.customer_hash,
+        vehicle_id: ctx.vhicle[0].vehicle_id,
+        order_services: ctx.serviceId,
+        price,
+      },
+      { method: "POST" }
+    );
   };
   return (
     <div className="bg-white p-10">
@@ -295,6 +332,7 @@ const Order = () => {
 const Services = () => {
   const { services } = useRouteLoaderData("service");
   const ctx = use(CustomerContext);
+  console.log(ctx.serviceId);
   const handleService = (id) => {
     ctx.setIsOrderSubmit(false);
     return ctx.setServiceId(id);
@@ -322,3 +360,49 @@ const Services = () => {
     </div>
   ));
 };
+
+export async function action({ request }) {
+  const formData = await request.formData();
+
+  const employee_id = formData.get("employee_id");
+  const customer_id = formData.get("customer_id");
+  const vehicle_id = formData.get("vehicle_id");
+  let order_services = formData.getAll("order_services");
+  const price = formData.get("price");
+
+  console.log(employee_id);
+  order_services = [...order_services[0]]
+    .map((num) => (typeof Number(num) === "number" ? Number(num) : NaN))
+    .filter((num) => {
+      if (num !== NaN) {
+        return num;
+      }
+    });
+
+  try {
+    const response = await fetch("http://localhost:3000/order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        employee_id: Number(employee_id),
+        customer_id,
+        vehicle_id,
+        order_services,
+        price: Number(price),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to submit order");
+    }
+
+    const result = await response.json();
+    return redirect("/");
+  } catch (err) {
+    console.error(err);
+    return { error: err.message };
+  }
+}

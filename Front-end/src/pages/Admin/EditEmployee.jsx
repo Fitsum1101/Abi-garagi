@@ -9,6 +9,9 @@ import {
 } from "react-router";
 import Input from "../../components/Input/Input";
 import { ClipLoader } from "react-spinners";
+import { getToken } from "../../util/token";
+
+const token = getToken();
 
 const EditEmployee = () => {
   const action = useActionData();
@@ -127,7 +130,12 @@ export default EditEmployee;
 export async function loader({ params }) {
   const { id } = params;
   try {
-    const response = await fetch(`http://localhost:3000/employee/${+id}`);
+    const response = await fetch(`http://localhost:3000/employee/${+id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Response("Failed to fetch product", {
@@ -137,6 +145,7 @@ export async function loader({ params }) {
     const customer = await response.json();
     return customer;
   } catch (error) {
+    console.log(error);
     throw new Response("Network error", { status: 500 });
   }
 }
@@ -183,20 +192,19 @@ export const action = async ({ params, request }) => {
       return data({ ...error }, { status: 400 });
     }
 
-    console.log("=================", formDatas.role);
-
     const toApiData = {
       employee_first_name: formDatas.firstName,
       employee_last_name: formDatas.lastName,
       employee_phone_number: formDatas.phone,
       employee_role: formDatas.role.toUpperCase(),
-      active_employee_status: formDatas.active ? 1 : 0,
+      active_employee_status: formDatas.active ? true : false,
     };
 
     const response = await fetch("http://localhost:3000/employee/" + id, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(toApiData),
     });

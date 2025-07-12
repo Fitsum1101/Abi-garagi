@@ -4,7 +4,8 @@ import CustomerVehicle from "../../components/Admin/profile/vehicle/CustomerVehi
 import AddVehicle from "../../components/Admin/profile/vehicle/AddVehicle";
 import Orders from "../../components/Admin/orders/Orders";
 import { useLoaderData, useParams } from "react-router";
-
+import { getToken } from "../../util/token";
+const token = getToken();
 const CustomerProfile = () => {
   const [close, setClose] = useState(true);
   const { customer, vehicles } = useLoaderData();
@@ -66,10 +67,17 @@ export default CustomerProfile;
 export async function loader({ params }) {
   const id = params.id;
 
+  const getHeadr = {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
   try {
     const [customerRes, vehiclesRes] = await Promise.all([
-      fetch(`http://localhost:3000/customer/${id}`),
-      fetch(`http://localhost:3000/vehicles/` + id),
+      fetch(`http://localhost:3000/customer/${id}`, getHeadr),
+      fetch(`http://localhost:3000/vehicles/` + id, getHeadr),
     ]);
 
     if (!customerRes.ok || !vehiclesRes.ok) {
@@ -78,8 +86,6 @@ export async function loader({ params }) {
 
     const customer = await customerRes.json();
     const vehicles = await vehiclesRes.json();
-
-    console.log(vehicles);
 
     return { customer, vehicles };
   } catch (error) {
@@ -128,7 +134,11 @@ export async function vehicleAction({ params, request }) {
   try {
     const response = await fetch("http://localhost:3000/vehicle", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ ...payload }),
     });
 

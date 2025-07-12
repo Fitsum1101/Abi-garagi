@@ -9,6 +9,7 @@ import {
 } from "react-router";
 import Input from "../../components/Input/Input";
 import { ClipLoader } from "react-spinners";
+import { getToken } from "../../util/token";
 
 const EditCustomer = () => {
   const action = useActionData();
@@ -16,7 +17,6 @@ const EditCustomer = () => {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   const [success, setSuccess] = useState(false);
-
   return (
     <div className="mt-10 mb-20">
       <p className="text-2xl font-semibold mb-6 text-blue-950 capitalize">
@@ -101,19 +101,25 @@ const EditCustomer = () => {
 
 export default EditCustomer;
 
+const token = getToken();
+
 export async function loader({ params }) {
   const { id } = params;
   try {
-    const response = await fetch(`http://localhost:3000/customer/${id}`);
+    const response = await fetch(`http://localhost:3000/customer/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      throw new Response("Failed to fetch product", {
-        status: response.status,
-      });
+      console.log(await response.json());
     }
     const customer = await response.json();
     return customer;
   } catch (error) {
+    console.log(error);
     throw new Response("Network error", { status: 500 });
   }
 }
@@ -124,8 +130,6 @@ export const action = async ({ params, request }) => {
     const formDatas = Object.fromEntries(formData.entries());
     const { id } = params;
     const error = {};
-
-    console.log(formDatas);
 
     for (let input in formDatas) {
       if (input === "firstName") {
@@ -172,6 +176,7 @@ export const action = async ({ params, request }) => {
       method: "put",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(toApiData),
     });

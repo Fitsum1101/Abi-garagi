@@ -5,8 +5,9 @@ import Root from "./components/layout/Root";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import ContactAs from "./pages/ContactAs";
-import Login from "./pages/Login";
 import Admin from "./pages/Admin/Admin";
+import { loginAction } from "./pages/Login";
+import Login from "./pages/Login";
 import AdminLayout from "./components/layout/AdminLayout";
 import Addcustomer from "./pages/Admin/Addcustomer";
 import AddEmployee from "./pages/Admin/AddEmployee";
@@ -39,6 +40,11 @@ import {
   vehicleAction,
 } from "./pages/Admin/CustomerProfile";
 import Neworder from "./pages/Admin/Neworder";
+import { action as OrderAction } from "./pages/Admin/Neworder";
+import Orders from "./pages/Admin/Orders";
+import { loader as OrderLoader } from "./pages/Admin/Orders";
+import Orderdetail from "./pages/Orderdetail";
+import { loader as orderDetailLoader } from "./pages/Orderdetail";
 
 const router = createBrowserRouter([
   {
@@ -50,7 +56,12 @@ const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "services", element: <Services /> },
       { path: "contact", element: <ContactAs /> },
-      { path: "login", element: <Login /> },
+      { path: "login", element: <Login />, action: loginAction },
+      {
+        path: "/order/details/:id",
+        element: <Orderdetail />,
+        loader: orderDetailLoader,
+      },
       {
         path: "admin",
         element: <AdminLayout />,
@@ -65,12 +76,13 @@ const router = createBrowserRouter([
           },
           {
             path: "customer/edit/:id",
-            element: <EditCustomerData />,
+            element: <EditCustomer />,
             loader: EditCustomerData,
             action: EditCustomerDataInput,
           },
           {
             path: "customer/profile/:id",
+            element: <EditCustomer />,
             element: <CustomerProfile />,
             loader: customerProfileLoader,
             action: vehicleAction,
@@ -105,6 +117,12 @@ const router = createBrowserRouter([
           {
             path: "new-order",
             element: <Neworder />,
+            action: OrderAction,
+          },
+          {
+            path: "orders",
+            element: <Orders />,
+            loader: OrderLoader,
           },
         ],
       },

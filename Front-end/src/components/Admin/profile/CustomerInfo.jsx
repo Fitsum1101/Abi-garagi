@@ -1,10 +1,18 @@
-import React from "react";
+import React, { use } from "react";
 import { Link } from "react-router";
 import EditSquareIcon from "@mui/icons-material/EditSquare";
+import ClearIcon from "@mui/icons-material/Clear";
+import { CustomerContext } from "../../../context/customer-context";
 
 const CustomerInfo = ({ email, phone, active, id, firstName, lastName }) => {
+  const ctx = use(CustomerContext);
+  const handeCloseCustomer = () => {
+    ctx.setCustomerData({});
+    ctx.setVehicle({});
+    ctx.setMechanice({});
+  };
   return (
-    <div className="p-4 border border-t-0 border-gray-300 bg-white">
+    <div className="p-4 border border-t-0 flex justify-between border-gray-300 bg-white">
       <div>
         <div className="">
           <h1 className="text-2xl capitalize font-semibold text-blue-950">
@@ -33,6 +41,14 @@ const CustomerInfo = ({ email, phone, active, id, firstName, lastName }) => {
             </span>
           </p>
         </div>
+      </div>
+      <div>
+        <ClearIcon
+          onClick={handeCloseCustomer}
+          className="cursor-pointer"
+          style={{ color: "red", fontWeight: "bold" }}
+          fontSize="large"
+        />
       </div>
     </div>
   );

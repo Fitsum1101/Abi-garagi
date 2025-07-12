@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 
-const firstTime = true;
-
 const Input = ({
   name,
   type,
   placeholder,
   bgColor,
   color,
-  pL,
-  pt,
   defaultValue,
   width,
   height,
@@ -20,7 +16,7 @@ const Input = ({
 
   useEffect(() => {
     if (defaultValue) {
-      setValue("");
+      setValue(defaultValue);
     }
   }, [defaultValue]);
 
@@ -65,6 +61,7 @@ const Input = ({
         name={name}
         value={value}
         placeholder={placeholder}
+        defaultValue={defaultValue}
         onChange={handelChange}
         onBlur={onBlurHandler}
         className={` border-1 placeholder:italic focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 placeholder:text-gray-400 placeholder:capitalize outline-none border-gray-300 ${

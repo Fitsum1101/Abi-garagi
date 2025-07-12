@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import {
   Await,
   Form,
@@ -7,11 +7,13 @@ import {
   useActionData,
   useAsyncValue,
   useLoaderData,
-  useSubmit,
 } from "react-router-dom";
 
 import EditSquareIcon from "@mui/icons-material/EditSquare";
 import OpenInFullSharpIcon from "@mui/icons-material/OpenInFullSharp";
+import { getToken } from "../../util/token";
+
+const token = getToken();
 
 const Customers = () => {
   const data = useLoaderData();
@@ -58,11 +60,11 @@ export async function loader() {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 }
 
-// routes/searchAction.js
 export async function action({ request }) {
   const formData = await request.formData();
   const query = formData.get("search");
@@ -73,6 +75,9 @@ export async function action({ request }) {
     `http://localhost:3000/customer/search?query=${encodeURIComponent(query)}`,
     {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 }
@@ -81,10 +86,10 @@ const CustomersTable = () => {
   const customderData = useAsyncValue();
   const searchCustomerData = useActionData();
   const isActionDataExist = searchCustomerData && true;
+
   let data;
   if (isActionDataExist) {
     data = searchCustomerData.data;
-    console.log(data);
   } else {
     data = customderData.contacts;
   }
@@ -152,7 +157,7 @@ const CustomersTable = () => {
                 </td>
                 <td className="pl-4 py-1 border border-gray-300 ">
                   <div className="flex gap-2">
-                    <Link to={`/admin/customer/edit/${row.customer_hash}`}>
+                    <Link to={"/admin/customer/edit/" + row.customer_hash}>
                       <EditSquareIcon fontSize="small" />
                     </Link>
                     <Link to={"/admin/customer/profile/" + row.customer_hash}>

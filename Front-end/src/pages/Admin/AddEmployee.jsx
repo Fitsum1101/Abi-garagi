@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Form, useActionData, data } from "react-router";
 import Input from "../../components/Input/Input";
 import { useEffect } from "react";
+import { getToken } from "../../util/token";
 
+const token = getToken();
 const AddEmployee = () => {
   const action = useActionData();
   const [success, setSuccess] = useState(false);
@@ -167,6 +169,7 @@ export const action = async ({ request }) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(toApiData),
     });
