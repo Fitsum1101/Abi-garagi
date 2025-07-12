@@ -21,6 +21,12 @@ router.get(
   authroizeRole("MANAGER"),
   employeeController.getEmployee
 );
+router.get(
+  "/employees/role/:role",
+  // authenticateToken,
+  // authroizeRole("MANAGER"),
+  employeeController.getEmployeeByRole
+);
 
 router.get(
   "/employee/:id",
@@ -34,6 +40,10 @@ router.post(
   "/employee/",
   authenticateToken,
   authroizeRole("MANAGER"),
+  (req, res, next) => {
+    console.log(req.body);
+    next();
+  },
   [
     employeeEmailValidation("employee_email", "Email is required"),
     nameValidation("employee_first_name", "First name is required"),

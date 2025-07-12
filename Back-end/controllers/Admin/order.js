@@ -5,7 +5,7 @@ exports.postOrder = async (req, res) => {
   try {
     const employee = req.user;
 
-    const { employeeId, customer_id, vehicle_id, order_services, price } =
+    const { employee_id, customer_id, vehicle_id, order_services, price } =
       req.body;
 
     let orderServiceId;
@@ -16,14 +16,16 @@ exports.postOrder = async (req, res) => {
     } else {
       orderServiceId = [];
     }
+
     const customer = await db.customerIdentifier.findFirst({
       where: {
         customerHash: customer_id.replaceAll("-", "/").replaceAll("_", "+"),
       },
     });
+
     const newOrder = await db.order.create({
       data: {
-        employeeId,
+        employeeId: employee_id,
         customerId: customer.customerId,
         vehicleId: +vehicle_id,
         price,
@@ -55,21 +57,15 @@ exports.postOrder = async (req, res) => {
 exports.getAllOrders = async (req, res) => {
   try {
     const employee = req.user;
-
+    const filterOrder = {};
+    if (employee.role === "MANAGER") {
+      filterOrder.employee = { addedById: employee.employee_id };
+    } else if (employee.role === "EMPLOYEE") {
+      filterOrder.employeeId = employee.employee_id;
+    }
     const orders = await db.order.findMany({
       where: {
-        OR: [
-          {
-            employee: {
-              addedBy: employee.employeeId,
-            },
-          },
-          {
-            employee: {
-              role: "ADMIN",
-            },
-          },
-        ],
+        ...filterOrder,
       },
       include: {
         orderServices: {
@@ -161,23 +157,7 @@ exports.getOrder = async (req, res) => {
 
     const order = await db.order.findUnique({
       where: {
-        AND: [
-          { orderId: orderId },
-          {
-            OR: [
-              {
-                employee: {
-                  addedBy: employee.employeeId,
-                },
-              },
-              {
-                employee: {
-                  role: "ADMIN",
-                },
-              },
-            ],
-          },
-        ],
+        orderId: orderId,
       },
       include: {
         orderServices: {

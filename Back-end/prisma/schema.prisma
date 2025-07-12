@@ -59,6 +59,7 @@ model CommonServices {
 model Employee {
   employeeId     Int                  @id @default(autoincrement())
   employeeEmail  String               @unique
+  activeEmployee Boolean            @default(true)
   addedById       Int?       // This is the FK to another employee's ID
   addedBy         Employee?           @relation("EmployeeAddedBy", fields: [addedById], references: [employeeId])   
   addedEmployees Employee[]           @relation("EmployeeAddedBy") // Inverse side of the relation

@@ -2,75 +2,10 @@ const bcrypt = require("bcrypt");
 
 const db = require("../../util/db");
 
-exports.getEmployee = async (req, res, next) => {
-  try {
-    const user = req.employee;
-    let employee = await db.employee.findMany({
-      take: 10,
-      where: {
-        AND: [
-          {
-            employeeId: {
-              not: {
-                equals: user.employeeId,
-              },
-            },
-          },
-          {
-            role: {
-              not: {
-                equals: "ADMIN",
-              },
-            },
-          },
-          {
-            activeEmployee: 1,
-          },
-        ],
-      },
-      select: {
-        employeeEmail: true,
-        employeeId: true,
-        addedDate: true,
-        activeEmployee: true,
-      },
-    });
-
-    console.log(employee);
-    employee = await Promise.all(
-      employee.map(async (emp) => {
-        const info = await db.employeeInfo.findUnique({
-          where: { employeeId: emp.employeeId },
-          select: {
-            employeePhone: true,
-            employeeFirstName: true,
-            employeeLastName: true,
-          },
-        });
-        return {
-          employee_id: emp.employeeId,
-          employee_email: emp.employeeEmail,
-          active_employee: emp.activeEmployee,
-          added_date: emp.addedDate,
-          employee_phone: info?.employeePhone,
-          employee_first_name: info?.employeeFirstName,
-          employee_last_name: info?.employeeLastName,
-        };
-      })
-    );
-    res.json({
-      limit: 10,
-      contacts: employee,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 exports.getEmployeeById = async (req, res, next) => {
   try {
     const id = +req.params.id;
-    const employeeIdentifier = await db.employee.findUnique({
+    const employeeIdentifier = await db.employee.findFirst({
       where: {
         AND: [
           {
@@ -114,17 +49,89 @@ exports.getEmployeeById = async (req, res, next) => {
   }
 };
 
+exports.getEmployee = async (req, res, next) => {
+  try {
+    const user = req.user;
+    let ManagerAddedEmpoyes = {};
+    if (user.role === "MANAGER") {
+      ManagerAddedEmpoyes.addedById = user.employee_id;
+    }
+    let employee = await db.employee.findMany({
+      take: 10,
+      where: {
+        AND: [
+          {
+            ...ManagerAddedEmpoyes,
+          },
+          {
+            employeeId: {
+              not: {
+                equals: user.employee_id,
+              },
+            },
+          },
+          {
+            role: {
+              not: {
+                equals: "ADMIN",
+              },
+            },
+          },
+          {
+            activeEmployee: true,
+          },
+        ],
+      },
+      select: {
+        employeeEmail: true,
+        employeeId: true,
+        addedDate: true,
+        activeEmployee: true,
+      },
+    });
+
+    employee = await Promise.all(
+      employee.map(async (emp) => {
+        const info = await db.employeeInfo.findUnique({
+          where: { employeeId: emp.employeeId },
+          select: {
+            employeePhone: true,
+            employeeFirstName: true,
+            employeeLastName: true,
+          },
+        });
+        return {
+          employee_id: emp.employeeId,
+          employee_email: emp.employeeEmail,
+          active_employee: emp.activeEmployee,
+          added_date: emp.addedDate,
+          employee_phone: info?.employeePhone,
+          employee_first_name: info?.employeeFirstName,
+          employee_last_name: info?.employeeLastName,
+        };
+      })
+    );
+    res.json({
+      limit: 10,
+      contacts: employee,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.postEmployee = async (req, res, next) => {
   const user = req.user;
+  console.log(req.body.role);
   try {
     const hashedPassword = await bcrypt.hash(req.body.employee_password, 5);
     const employee = await db.employee.create({
       data: {
         employeeEmail: req.body.employee_email,
-        activeEmployee: 1,
-        addedById: user.employeeId,
+        activeEmployee: true,
+        addedById: user.employee_id,
         addedDate: new Date().toISOString(),
-        role: req.body.role || "EMPLOYEE",
+        role: req.body.employee_role.toUpperCase() || "EMPLOYEE",
       },
     });
 
@@ -180,6 +187,39 @@ exports.updateEmployee = async (req, res, next) => {
     res.status(201).json({
       success: true,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.getEmployeeByRole = async (req, res, next) => {
+  try {
+    const role = req.params.role.toUpperCase();
+
+    let employee = await db.employee.findMany({
+      where: {
+        role,
+        activeEmployee: true,
+      },
+      include: {
+        employeeInfo: {
+          select: {
+            employeeFirstName: true,
+            employeeLastName: true,
+          },
+        },
+      },
+    });
+
+    if (employee.length > 0)
+      employee = employee.map((emp) => {
+        return {
+          employee_id: emp.employeeId,
+          employee_first_name: emp.employeeInfo.employeeFirstName,
+          employee_last_name: emp.employeeInfo.employeeLastName,
+        };
+      });
+    console.log(employee);
+    res.status(200).json({ employee, message: "success" });
   } catch (error) {
     next(error);
   }

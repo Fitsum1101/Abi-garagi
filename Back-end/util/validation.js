@@ -89,7 +89,7 @@ exports.employeeEmailValidation = (name, message) =>
         where: { employeeEmail: value },
       });
 
-      console.log(existingEmployee);
+      console.log(value, name);
 
       if (isLoginUrl && !existingEmployee) throw new Error("Email not exists");
 

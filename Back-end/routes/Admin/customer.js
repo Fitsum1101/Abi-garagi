@@ -15,7 +15,7 @@ const {
 router.get(
   "/customer",
   authenticateToken,
-  authroizeRole("EMPLOYEE"),
+  authroizeRole("MANAGER"),
   customerController.getCustomer
 );
 

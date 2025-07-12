@@ -4,6 +4,79 @@ const db = require("../../util/db");
 
 const authorizeRole = require("../../middleware/authroizeRole");
 
+exports.getCustomer = async (req, res, next) => {
+  try {
+    let customer = await db.customerIdentifier.findMany({
+      take: 10,
+      select: {
+        customerId: true,
+        customerEmail: true,
+        customerPhoneNumber: true,
+        customerHash: true,
+        customerAddedDate: true,
+      },
+    });
+
+    customer = await Promise.all(
+      customer.map(async (cust) => {
+        const info = await db.customerInfo.findUnique({
+          where: { customerId: cust.customerId },
+          select: {
+            activeCustomerStatus: true,
+            customerFirstName: true,
+            customerLastName: true,
+          },
+        });
+        return {
+          customer_id: 1,
+          customer_email: cust.customerEmail,
+          customer_phone_number: cust.customerPhoneNumber,
+          customer_first_name: info?.customerFirstName,
+          customer_last_name: info?.customerLastName,
+          customer_hash: cust.customerHash
+            .replaceAll("/", "-")
+            .replaceAll("+", "_"),
+          active_customer_status: info?.activeCustomerStatus,
+          customer_added_date: fullYearTime(cust.customerAddedDate),
+        };
+      })
+    );
+    res.status(200).json({
+      limit: 10,
+      contacts: customer,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCustomerById = async (req, res, next) => {
+  try {
+    const hashedId = req.params.id.replaceAll("-", "/").replaceAll("_", "+");
+    const customerIdentifier = await db.customerIdentifier.findUnique({
+      where: { customerHash: hashedId },
+    });
+
+    const customerInfo = await db.customerInfo.findUnique({
+      where: { customerId: customerIdentifier.customerId },
+    });
+
+    res.status(200).json({
+      customer: {
+        customer_email: customerIdentifier.customerEmail,
+        customer_phone_number: customerIdentifier.customerPhoneNumber,
+        customer_first_name: customerInfo.customerFirstName,
+        customer_last_name: customerInfo.customerLastName,
+        active_customer_status: customerInfo.activeCustomerStatus,
+        customer_added_date: customerIdentifier.customerAddedDate,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    next(error);
+  }
+};
+
 exports.searchCustomer = async (req, res) => {
   const { query } = req.query;
   try {
@@ -118,33 +191,6 @@ exports.searchCustomer = async (req, res) => {
   }
 };
 
-exports.getCustomerById = async (req, res, next) => {
-  try {
-    const hashedId = req.params.id.replaceAll("-", "/").replaceAll("_", "+");
-    const customerIdentifier = await db.customerIdentifier.findUnique({
-      where: { customerHash: hashedId },
-    });
-
-    const customerInfo = await db.customerInfo.findUnique({
-      where: { customerId: customerIdentifier.customerId },
-    });
-
-    res.status(200).json({
-      customer: {
-        customer_email: customerIdentifier.customerEmail,
-        customer_phone_number: customerIdentifier.customerPhoneNumber,
-        customer_first_name: customerInfo.customerFirstName,
-        customer_last_name: customerInfo.customerLastName,
-        active_customer_status: customerInfo.activeCustomerStatus,
-        customer_added_date: customerIdentifier.customerAddedDate,
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching customer:", error);
-    next(error);
-  }
-};
-
 exports.postCustomer = async (req, res, next) => {
   try {
     const customerInfo = await db.customerIdentifier.create({
@@ -207,52 +253,6 @@ exports.updateCustomer = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error updating customer:", error);
-    next(error);
-  }
-};
-
-exports.getCustomer = async (req, res, next) => {
-  try {
-    let customer = await db.customerIdentifier.findMany({
-      take: 10,
-      select: {
-        customerId: true,
-        customerEmail: true,
-        customerPhoneNumber: true,
-        customerHash: true,
-        customerAddedDate: true,
-      },
-    });
-
-    customer = await Promise.all(
-      customer.map(async (cust) => {
-        const info = await db.customerInfo.findUnique({
-          where: { customerId: cust.customerId },
-          select: {
-            activeCustomerStatus: true,
-            customerFirstName: true,
-            customerLastName: true,
-          },
-        });
-        return {
-          customer_id: 1,
-          customer_email: cust.customerEmail,
-          customer_phone_number: cust.customerPhoneNumber,
-          customer_first_name: info?.customerFirstName,
-          customer_last_name: info?.customerLastName,
-          customer_hash: cust.customerHash
-            .replaceAll("/", "-")
-            .replaceAll("+", "_"),
-          active_customer_status: info?.activeCustomerStatus,
-          customer_added_date: fullYearTime(cust.customerAddedDate),
-        };
-      })
-    );
-    res.json({
-      limit: 10,
-      contacts: customer,
-    });
-  } catch (error) {
     next(error);
   }
 };
